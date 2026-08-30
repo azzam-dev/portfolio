@@ -1,0 +1,72 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import { useTranslations, localizedPath } from "../../../i18n/utils";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", (entry) => entry.id.startsWith("en/"));
+  return projects.map((project) => ({
+    params: { slug: project.data.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const locale = "en" as const;
+const t = useTranslations(locale);
+const { title, problemOneLiner, surface, stack, links, slug } = project.data;
+---
+
+<Base locale={locale} title={`${title} — Azzam`} description={problemOneLiner}>
+  <article class="max-w-2xl mx-auto px-5 py-20">
+    <p class="mono text-sm text-[var(--accent)] mb-3">{problemOneLiner}</p>
+    <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mb-10">{title}</h1>
+
+    <section class="mb-10">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3">
+        The Idea
+      </h2>
+      <p class="leading-relaxed">{surface.what}</p>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3">
+        Why It Matters
+      </h2>
+      <p class="leading-relaxed">{surface.why}</p>
+    </section>
+
+    <section class="mb-14">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3">
+        Who It's For
+      </h2>
+      <p class="leading-relaxed">{surface.forWhom}</p>
+    </section>
+
+    <div class="flex flex-wrap items-center gap-4 mb-14">
+      {links.repo && (
+        <a href={links.repo} class="text-sm underline underline-offset-4 text-[var(--text-muted)] hover:text-[var(--text)]">
+          Repo
+        </a>
+      )}
+      {links.live && (
+        <a href={links.live} class="text-sm underline underline-offset-4 text-[var(--text-muted)] hover:text-[var(--text)]">
+          Live
+        </a>
+      )}
+      {links.demo && (
+        <a href={links.demo} class="text-sm underline underline-offset-4 text-[var(--text-muted)] hover:text-[var(--text)]">
+          Demo
+        </a>
+      )}
+    </div>
+
+    <a
+      href={localizedPath(locale, `/work/${slug}/deep`)}
+      class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] text-[var(--accent-text)] px-5 py-3 font-medium transition-transform hover:translate-x-1 rtl:hover:-translate-x-1"
+    >
+      {t("project.underTheHood")}
+      <span aria-hidden="true">→</span>
+    </a>
+  </article>
+</Base>

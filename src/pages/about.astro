@@ -1,0 +1,25 @@
+---
+import Base from "../layouts/Base.astro";
+import { useTranslations } from "../i18n/utils";
+
+const locale = "en" as const;
+const t = useTranslations(locale);
+---
+
+<Base locale={locale} title="About — Azzam" description={t("about.heading")}>
+  <section class="max-w-2xl mx-auto px-5 py-20">
+    <h1 class="text-2xl font-semibold mb-8">{t("about.heading")}</h1>
+    <div class="space-y-5 leading-relaxed text-[var(--text-muted)]">
+      <p>
+        I'm a Computer Science builder — I start from a problem, then ask how to
+        build it, how the pieces connect, and how to make it simpler for whoever
+        uses it.
+      </p>
+      <p>
+        Replace this paragraph with a short, specific account of how you actually
+        work: the kinds of problems you gravitate toward, and one habit that
+        shows up across your projects.
+      </p>
+    </div>
+  </section>
+</Base>

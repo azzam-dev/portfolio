@@ -1,0 +1,36 @@
+---
+import { useTranslations, localizedPath } from "../i18n/utils";
+import type { Locale } from "../i18n/ui";
+import ThemeToggle from "./ThemeToggle.astro";
+import LanguageToggle from "./LanguageToggle.astro";
+
+interface Props {
+  locale: Locale;
+  altPath: string;
+}
+const { locale, altPath } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<header class="border-b border-[var(--border)]">
+  <div class="max-w-4xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href={localizedPath(locale, "/")} class="font-semibold tracking-tight">
+      Azzam
+    </a>
+    <nav class="flex items-center gap-6 text-sm text-[var(--text-muted)]">
+      <a href={localizedPath(locale, "/work")} class="hover:text-[var(--text)] transition-colors">
+        {t("nav.work")}
+      </a>
+      <a href={localizedPath(locale, "/about")} class="hover:text-[var(--text)] transition-colors">
+        {t("nav.about")}
+      </a>
+      <a href={localizedPath(locale, "/contact")} class="hover:text-[var(--text)] transition-colors">
+        {t("nav.contact")}
+      </a>
+      <div class="flex items-center gap-2 ps-2 border-s border-[var(--border)]">
+        <LanguageToggle locale={locale} targetPath={altPath} />
+        <ThemeToggle locale={locale} />
+      </div>
+    </nav>
+  </div>
+</header>

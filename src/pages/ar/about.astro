@@ -1,0 +1,23 @@
+---
+import Base from "../../layouts/Base.astro";
+import { useTranslations } from "../../i18n/utils";
+
+const locale = "ar" as const;
+const t = useTranslations(locale);
+---
+
+<Base locale={locale} title="نبذة — عزام" description={t("about.heading")}>
+  <section class="max-w-2xl mx-auto px-5 py-20">
+    <h1 class="text-2xl font-semibold mb-8">{t("about.heading")}</h1>
+    <div class="space-y-5 leading-relaxed text-[var(--text-muted)]">
+      <p>
+        أنا بنّاء بعقلية علوم حاسب — أبدأ من المشكلة، ثم أسأل كيف أبنيها، وكيف
+        أربط أجزاءها، وكيف أخليها أبسط لمن يستخدمها.
+      </p>
+      <p>
+        استبدل هذه الفقرة بوصف قصير ومحدد لكيف تشتغل فعليًا: نوع المشاكل التي
+        تنجذب لها، وعادة واحدة تتكرر عبر مشاريعك.
+      </p>
+    </div>
+  </section>
+</Base>

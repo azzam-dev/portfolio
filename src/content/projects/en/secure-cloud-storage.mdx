@@ -1,0 +1,60 @@
+---
+slug: "secure-cloud-storage"
+title: "Secure Cloud Storage"
+problemOneLiner: "People trust file storage that gives them no way to check that trust."
+year: 2026
+status: "in-progress"
+
+surface:
+  what: "A file storage app where every file is encrypted before it leaves the user's device, so even the server operator can't read it."
+  why: "Most \"secure\" storage products ask you to trust the provider. I wanted to remove that requirement entirely, not just promise it."
+  forWhom: "People who need to store sensitive documents without handing a plaintext copy to a third party."
+
+deep:
+  layers:
+    - id: "user"
+      label: "User"
+      note: "Selects a file and a passphrase. Nothing leaves the browser yet."
+    - id: "auth"
+      label: "Authentication"
+      note: "Confirms who the user is. This layer never sees file contents."
+    - id: "encryption"
+      label: "Encryption"
+      note: "Runs client-side, before upload. If this step is skipped, nothing downstream can be trusted."
+    - id: "application"
+      label: "Application"
+      note: "Coordinates the upload/download flow and never holds a decryption key."
+    - id: "api"
+      label: "API"
+      note: "A thin boundary that accepts already-encrypted bytes and refuses everything else."
+    - id: "storage"
+      label: "AWS S3"
+      note: "Stores ciphertext. A breach here leaks nothing readable."
+    - id: "database"
+      label: "Database"
+      note: "Holds metadata only — filenames, sizes, timestamps — never file contents or keys."
+  architectureNotes: "Replace with a short paragraph on how the pieces above fit together and why the boundary between 'application' and 'API' matters here."
+  decisions:
+    - question: "Where should encryption happen?"
+      optionA: "Server-side, right before writing to S3."
+      optionB: "Client-side, before the file ever leaves the browser."
+      chosen: "Client-side."
+      because: "Server-side encryption still requires trusting the server with a plaintext file at some point. Client-side removes that requirement entirely, which was the actual point of the project."
+  challenges:
+    - whatBroke: "Replace with the specific failure — e.g. large files timing out, a key-derivation step blocking the main thread, a race condition on concurrent uploads."
+      howDiagnosed: "Replace with how you actually found the cause — logs, profiling, a specific reproduction step."
+      fix: "Replace with what changed and why that fixed it, not just what you did."
+  security: "Replace with the actual scheme: key derivation function, cipher, how keys are stored client-side, threat model boundaries."
+  whatIdImprove:
+    - "Replace with a real limitation you know about and would change if you rebuilt this — not a hedge, an honest one."
+
+stack:
+  - "TypeScript"
+  - "AWS S3"
+  - "Web Crypto API"
+
+links: {}
+---
+{/* The deep-dive page builds the Layer Reveal diagram and every section
+    directly from the frontmatter above — this body is intentionally empty. */}
+

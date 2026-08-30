@@ -1,0 +1,27 @@
+---
+import { useTranslations, localizedPath } from "../i18n/utils";
+import type { Locale } from "../i18n/ui";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  locale: Locale;
+  project: CollectionEntry<"projects">;
+}
+const { locale, project } = Astro.props;
+const t = useTranslations(locale);
+const href = localizedPath(locale, `/work/${project.data.slug}`);
+---
+
+<a
+  href={href}
+  class="group block rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 transition-colors hover:border-[var(--text-muted)]"
+>
+  <h3 class="text-lg font-semibold mb-2">{project.data.title}</h3>
+  <p class="text-[var(--text-muted)] mb-4">{project.data.problemOneLiner}</p>
+  <span class="text-sm text-[var(--accent)] inline-flex items-center gap-1">
+    {t("home.explore")}
+    <span class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden="true">
+      →
+    </span>
+  </span>
+</a>

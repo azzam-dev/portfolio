@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens ---------- */
+/* Light is the base palette; dark overrides it. Both are first-class —
+   the toggle and the OS preference both have to land on a real value. */
+:root {
+  --bg: #FAFAF9;
+  --surface: #FFFFFF;
+  --border: #E4E4E2;
+  --text: #17181A;
+  --text-muted: #6B6E73;
+  --accent: #2A5FF0;
+  --accent-text: #FFFFFF;
+
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+  --space-7: 6rem;
+  --space-8: 9rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0C0E;
+    --surface: #131518;
+    --border: #22252A;
+    --text: #E8E9EB;
+    --text-muted: #8A8F98;
+    --accent: #5B8DFF;
+    --accent-text: #0B0C0E;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0B0C0E;
+  --surface: #131518;
+  --border: #22252A;
+  --text: #E8E9EB;
+  --text-muted: #8A8F98;
+  --accent: #5B8DFF;
+  --accent-text: #0B0C0E;
+  color-scheme: dark;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* ---------- Base ---------- */
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--bg);
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:lang(ar) {
+  font-family: "IBM Plex Sans Arabic", "Tahoma", var(--font-sans);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+a {
+  color: inherit;
+}
+
+/* Motion respects the user's OS-level preference everywhere, not just
+   inside the Layer Reveal island. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

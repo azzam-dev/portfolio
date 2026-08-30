@@ -1,0 +1,120 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import LayerReveal from "../../../../components/LayerReveal";
+import { useTranslations, localizedPath } from "../../../../i18n/utils";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", (entry) => entry.id.startsWith("ar/"));
+  return projects.map((project) => ({
+    params: { slug: project.data.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const locale = "ar" as const;
+const t = useTranslations(locale);
+const { title, deep, stack, slug } = project.data;
+---
+
+<Base locale={locale} title={`خلف الكواليس — ${title}`} description={deep.architectureNotes}>
+  <article class="max-w-2xl mx-auto px-5 py-20">
+    <a
+      href={localizedPath(locale, `/work/${slug}`)}
+      class="text-sm text-[var(--text-muted)] hover:text-[var(--text)] inline-flex items-center gap-1 mb-10"
+    >
+      <span aria-hidden="true">→</span>
+      {t("project.back")}
+    </a>
+
+    <p class="mono text-sm text-[var(--accent)] mb-3">{t("project.underTheHood")}</p>
+    <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mb-10">{title}</h1>
+
+    <section class="mb-14">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        {t("deep.architecture")}
+      </h2>
+      <p class="leading-relaxed text-[var(--text-muted)] mb-6">{deep.architectureNotes}</p>
+
+      <LayerReveal client:visible layers={deep.layers} dir="rtl" />
+
+      <noscript>
+        <ol class="mt-4 list-decimal pe-5 space-y-2">
+          {deep.layers.map((layer) => (
+            <li>
+              <strong>{layer.label}</strong> — {layer.note}
+            </li>
+          ))}
+        </ol>
+      </noscript>
+    </section>
+
+    <section class="mb-14">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        {t("deep.decisions")}
+      </h2>
+      <div class="space-y-6">
+        {deep.decisions.map((d) => (
+          <div class="rounded-lg border border-[var(--border)] p-5">
+            <p class="font-medium mb-3">{d.question}</p>
+            <p class="text-sm text-[var(--text-muted)] mb-1">أ — {d.optionA}</p>
+            <p class="text-sm text-[var(--text-muted)] mb-3">ب — {d.optionB}</p>
+            <p class="text-sm mb-1">
+              <span class="mono text-[var(--accent)]">{t("deep.chosen")}:</span> {d.chosen}
+            </p>
+            <p class="text-sm text-[var(--text-muted)] leading-relaxed">
+              <span class="mono">{t("deep.because")}:</span> {d.because}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="mb-14">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        {t("deep.challenges")}
+      </h2>
+      <div class="space-y-6">
+        {deep.challenges.map((c) => (
+          <div class="rounded-lg border border-[var(--border)] p-5">
+            <p class="font-medium mb-2">{c.whatBroke}</p>
+            <p class="text-sm text-[var(--text-muted)] mb-2">{c.howDiagnosed}</p>
+            <p class="text-sm leading-relaxed">{c.fix}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {deep.security && (
+      <section class="mb-14">
+        <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+          {t("deep.security")}
+        </h2>
+        <p class="leading-relaxed text-[var(--text-muted)]">{deep.security}</p>
+      </section>
+    )}
+
+    <section class="mb-14">
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        {t("project.stack")}
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        {stack.map((s) => (
+          <span class="mono text-xs px-2 py-1 rounded border border-[var(--border)] text-[var(--text-muted)]">
+            {s}
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        {t("deep.improve")}
+      </h2>
+      <ul class="list-disc pe-5 space-y-2 text-[var(--text-muted)] leading-relaxed">
+        {deep.whatIdImprove.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+  </article>
+</Base>
