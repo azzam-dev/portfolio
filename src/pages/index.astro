@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import { useTranslations, localizedPath } from "../i18n/utils";
+import { useTranslations } from "../i18n/utils";
 
 const locale = "en" as const;
 const t = useTranslations(locale);

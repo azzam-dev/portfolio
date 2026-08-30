@@ -1,5 +1,7 @@
 import { ui, defaultLocale, type Locale } from "./ui";
 
+export type { Locale };
+
 export function useTranslations(locale: Locale) {
   return function t(key: keyof (typeof ui)[typeof defaultLocale]): string {
     return ui[locale][key] ?? ui[defaultLocale][key];

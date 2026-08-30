@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const locale = "en" as const;
 const t = useTranslations(locale);
-const { title, problemOneLiner, surface, stack, links, slug } = project.data;
+const { title, problemOneLiner, surface, links, slug } = project.data;
 ---
 
 <Base locale={locale} title={`${title} — Azzam`} description={problemOneLiner}>
