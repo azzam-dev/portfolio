@@ -10,27 +10,47 @@ interface Props {
 }
 const { locale, altPath } = Astro.props;
 const t = useTranslations(locale);
+
+/* The site is one page: these are anchors into it, not routes. They stay
+   absolute rather than bare "#work" so they also work from the case-study
+   pages, which are the only routes left besides home. */
+const home = localizedPath(locale, "/");
+/* Home is an anchor too. Pointing it at bare "/" made it the one link that
+   reloaded the page instead of scrolling — no smooth scroll, no snap. */
+const section = (id: string) => `${home}#${id}`;
 ---
 
-<header class="border-b border-[var(--border)]">
-  <div class="max-w-4xl mx-auto px-5 h-16 flex items-center justify-between">
-    <a href={localizedPath(locale, "/")} class="font-semibold tracking-tight">
-      Azzam
-    </a>
-    <nav class="flex items-center gap-6 text-sm text-[var(--text-muted)]">
-      <a href={localizedPath(locale, "/work")} class="hover:text-[var(--text)] transition-colors">
+{/* Sticky, because the home page is one full screen per section: in flow this
+    bar would scroll away after the first screen and take the whole nav with it.
+    The opaque background is load-bearing too — the background field is fixed to
+    the viewport and reaches up behind this bar, so a transparent header would
+    have dots and section text sliding through the nav. */}
+<header class="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)]">
+  <div class="relative max-w-4xl mx-auto px-5 h-16 flex items-center justify-between md:justify-end gap-3">
+    {/* Absolutely centred from md up so the links sit on the page's true centre
+        regardless of how wide the toggles are. Below that there isn't room for
+        a centred row plus the toggles, so it falls back to in-flow at the start
+        edge — `left` is deliberate and not `start`: centring is symmetric, so
+        the logical property would flip it off-centre in RTL. */}
+    <nav
+      class="flex items-center gap-4 text-sm md:text-base font-medium text-[var(--text-muted)] md:absolute md:left-1/2 md:-translate-x-1/2 md:gap-7"
+    >
+      <a href={section("top")} class="hover:text-[var(--text)] transition-colors">
+        {t("nav.home")}
+      </a>
+      <a href={section("work")} class="hover:text-[var(--text)] transition-colors">
         {t("nav.work")}
       </a>
-      <a href={localizedPath(locale, "/about")} class="hover:text-[var(--text)] transition-colors">
+      <a href={section("about")} class="hover:text-[var(--text)] transition-colors">
         {t("nav.about")}
       </a>
-      <a href={localizedPath(locale, "/contact")} class="hover:text-[var(--text)] transition-colors">
+      <a href={section("contact")} class="hover:text-[var(--text)] transition-colors">
         {t("nav.contact")}
       </a>
-      <div class="flex items-center gap-2 ps-2 border-s border-[var(--border)]">
-        <LanguageToggle locale={locale} targetPath={altPath} />
-        <ThemeToggle locale={locale} />
-      </div>
     </nav>
+    <div class="flex items-center gap-2">
+      <LanguageToggle locale={locale} targetPath={altPath} />
+      <ThemeToggle locale={locale} />
+    </div>
   </div>
 </header>

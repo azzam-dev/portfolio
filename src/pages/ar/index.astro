@@ -1,35 +1,159 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import DotLensBackground from "../../components/DotLensBackground";
 import ProjectCard from "../../components/ProjectCard.astro";
+import FeaturedProject from "../../components/FeaturedProject.astro";
 import { useTranslations } from "../../i18n/utils";
 
 const locale = "ar" as const;
 const t = useTranslations(locale);
 const projects = await getCollection("projects", (entry) => entry.id.startsWith("ar/"));
+const email = "azzamalfahad23@gmail.com";
+const [featured, ...rest] = projects;
+
+/* Drawn from the stacks actually shipped across these projects — correct it
+   rather than letting it drift into a wish list. */
+const tools = [
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Astro",
+  "PostgreSQL",
+  "Supabase",
+];
+
+const linkedinUrl = "https://www.linkedin.com/in/azzam-alfahad";
+/* Shown without the "www." — it is 4 characters of nothing, and the value
+   column is the tightest thing on a 375px screen. */
+const linkedinLabel = "linkedin.com/in/azzam-alfahad";
+
+/* One screen per section. min-h-svh rather than h-svh so a section that
+   outgrows the viewport keeps scrolling instead of clipping, and svh rather
+   than vh so mobile browser chrome doesn't push the bottom out of reach. */
+const panel =
+  "min-h-svh flex flex-col justify-center snap-start snap-always px-5 pt-20 pb-12 md:pt-24 md:pb-16";
 ---
 
 <Base
   locale={locale}
-  title="عزام — أبني أشياء معقّدة بتجارب بسيطة."
+  title="عزام الفهد — أبني أشياء معقّدة بتجارب بسيطة."
   description={t("home.subline")}
 >
-  <section class="max-w-4xl mx-auto px-5 pt-24 pb-20 md:pt-36 md:pb-28">
-    <p class="mono text-sm text-[var(--accent)] mb-4">عزام</p>
-    <h1 class="text-3xl md:text-5xl font-semibold tracking-tight leading-tight mb-5 max-w-2xl">
-      {t("home.tagline")}
-    </h1>
-    <p class="text-[var(--text-muted)] max-w-xl">
-      {t("home.subline")}
-    </p>
-  </section>
+  {/* One page. The header's Work/About/Contact links are anchors into the
+      sections below, not routes. `isolate` gives the field's negative z-index a
+      context of its own, so it lands above the page background instead of
+      behind it. Nothing here needs pointer-events juggling: the field reads the
+      pointer off the window, so the page stays ordinarily clickable on top.
 
-  <section class="max-w-4xl mx-auto px-5 pb-28">
-    <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-6">
-      {t("home.workHeading")}
-    </h2>
-    <div class="grid md:grid-cols-2 gap-4">
-      {projects.map((project) => <ProjectCard locale={locale} project={project} />)}
-    </div>
-  </section>
+      The section labels drop the `mono uppercase tracking-widest` treatment the
+      English page uses: letter-spacing breaks the joins between Arabic letters
+      (مشاريعي renders as مـشا ريـعي), and JetBrains Mono has no Arabic glyphs
+      to set it in anyway. */}
+  <div class="relative isolate">
+    <DotLensBackground client:visible />
+
+    <section id="top" class={panel}>
+      <div class="max-w-4xl mx-auto w-full">
+        <h1 class="t-display mb-5">
+          {t("home.name")}
+        </h1>
+        <p class="t-lead mb-4 max-w-2xl">
+          {t("home.tagline")}
+        </p>
+        <p class="t-body text-[var(--text-muted)] max-w-2xl">
+          {t("home.subline")}
+        </p>
+      </div>
+    </section>
+
+    <section id="work" class={panel}>
+      <div class="max-w-4xl mx-auto w-full">
+        <p class="eyebrow mb-3">01 / {t("nav.work")}</p>
+        <h2 class="t-h2 mb-7">
+          {t("home.workHeading")}
+        </h2>
+        {featured && <FeaturedProject locale={locale} project={featured} />}
+        {rest.length > 0 && (
+          <div class="grid md:grid-cols-2 gap-4 mt-10">
+            {rest.map((project) => <ProjectCard locale={locale} project={project} />)}
+          </div>
+        )}
+      </div>
+    </section>
+
+    <section id="about" class={panel}>
+      <div class="max-w-4xl mx-auto w-full">
+        <p class="eyebrow mb-3">02 / {t("nav.about")}</p>
+        <h2 class="t-h2 mb-7">
+          {t("about.heading")}
+        </h2>
+        <p class="t-lead max-w-2xl mb-6">
+          أنا بنّاء بعقلية علوم حاسب — أبدأ من المشكلة، ثم أسأل كيف أبنيها، وكيف
+          أربط أجزاءها، وكيف أخليها أبسط لمن يستخدمها.
+        </p>
+        <p class="t-body text-[var(--text-muted)] max-w-2xl mb-8">
+          العمل الذي أعود إليه دائمًا قريب من الجزء الصعب: المصادقة والتشفير والحدود
+          التي يقرّر عندها النظام ما الذي يُسمح له بمعرفته. كل مشروع هنا يأتي ومعه
+          أسبابه، بما فيها الخيارات التي رفضتها.
+        </p>
+        <p class="eyebrow mb-4">{t("about.workWith")}</p>
+        <ul class="flex flex-wrap gap-2">
+          {tools.map((tool) => <li class="chip" dir="ltr">{tool}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section id="contact" class={panel}>
+      <div class="max-w-4xl mx-auto w-full">
+        <p class="eyebrow mb-3">03 / {t("nav.contact")}</p>
+        <h2 class="t-h2 mb-6">
+          {t("contact.heading")}
+        </h2>
+        <p class="t-lead text-[var(--text-muted)] mb-9 max-w-2xl">
+          {t("contact.line")}
+        </p>
+        {/* <dl> because these are term/value pairs. Each row is a whole target
+            rather than a bare underline, so there is something to aim at on a
+            screen this empty. */}
+        <dl class="space-y-3 max-w-xl">
+          <div>
+            <a href={`mailto:${email}`} class="link-row">
+              <dt class="t-body text-[var(--text-muted)]">{t("contact.email")}</dt>
+              <dd class="mono text-sm sm:text-base text-[var(--accent)] break-all" dir="ltr">{email}</dd>
+            </a>
+          </div>
+          <div>
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" class="link-row">
+              <dt class="t-body text-[var(--text-muted)]">{t("contact.linkedin")}</dt>
+              <dd class="mono text-sm sm:text-base text-[var(--accent)] break-all" dir="ltr">
+                {linkedinLabel}<span aria-hidden="true"> ↗</span>
+              </dd>
+            </a>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </div>
 </Base>
+
+{/* Scoped to this page on purpose: the scroll container is the document, but
+    only the home page has snap sections. Astro ships a page's styles with that
+    page alone, so the case-study routes keep ordinary scrolling. */}
+<style is:global>
+  html {
+    scroll-snap-type: y mandatory;
+  }
+  /* Snapping fights the user when a section is taller than the screen, which is
+     what a short window does. Below that, scroll normally. */
+  @media (max-height: 700px) {
+    html {
+      scroll-snap-type: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-snap-type: none;
+    }
+  }
+</style>

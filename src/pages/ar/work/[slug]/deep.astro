@@ -28,11 +28,11 @@ const { title, deep, stack, slug } = project.data;
       {t("project.back")}
     </a>
 
-    <p class="mono text-sm text-[var(--accent)] mb-3">{t("project.underTheHood")}</p>
-    <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mb-10">{title}</h1>
+    <p class="text-sm font-medium text-[var(--accent)] mb-3">{t("project.underTheHood")}</p>
+    <h1 class="t-h2 mb-10">{title}</h1>
 
     <section class="mb-14">
-      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+      <h2 class="eyebrow mb-4">
         {t("deep.architecture")}
       </h2>
       <p class="leading-relaxed text-[var(--text-muted)] mb-6">{deep.architectureNotes}</p>
@@ -51,7 +51,7 @@ const { title, deep, stack, slug } = project.data;
     </section>
 
     <section class="mb-14">
-      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+      <h2 class="eyebrow mb-4">
         {t("deep.decisions")}
       </h2>
       <div class="space-y-6">
@@ -61,10 +61,10 @@ const { title, deep, stack, slug } = project.data;
             <p class="text-sm text-[var(--text-muted)] mb-1">أ — {d.optionA}</p>
             <p class="text-sm text-[var(--text-muted)] mb-3">ب — {d.optionB}</p>
             <p class="text-sm mb-1">
-              <span class="mono text-[var(--accent)]">{t("deep.chosen")}:</span> {d.chosen}
+              <span class="font-medium text-[var(--accent)]">{t("deep.chosen")}:</span> {d.chosen}
             </p>
             <p class="text-sm text-[var(--text-muted)] leading-relaxed">
-              <span class="mono">{t("deep.because")}:</span> {d.because}
+              <span class="font-medium">{t("deep.because")}:</span> {d.because}
             </p>
           </div>
         ))}
@@ -72,7 +72,7 @@ const { title, deep, stack, slug } = project.data;
     </section>
 
     <section class="mb-14">
-      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+      <h2 class="eyebrow mb-4">
         {t("deep.challenges")}
       </h2>
       <div class="space-y-6">
@@ -88,7 +88,7 @@ const { title, deep, stack, slug } = project.data;
 
     {deep.security && (
       <section class="mb-14">
-        <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+        <h2 class="eyebrow mb-4">
           {t("deep.security")}
         </h2>
         <p class="leading-relaxed text-[var(--text-muted)]">{deep.security}</p>
@@ -96,7 +96,7 @@ const { title, deep, stack, slug } = project.data;
     )}
 
     <section class="mb-14">
-      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+      <h2 class="eyebrow mb-4">
         {t("project.stack")}
       </h2>
       <div class="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ const { title, deep, stack, slug } = project.data;
     </section>
 
     <section>
-      <h2 class="mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-4">
+      <h2 class="eyebrow mb-4">
         {t("deep.improve")}
       </h2>
       <ul class="list-disc pe-5 space-y-2 text-[var(--text-muted)] leading-relaxed">

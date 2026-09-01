@@ -3,17 +3,31 @@
 /* ---------- Design tokens ---------- */
 /* Light is the base palette; dark overrides it. Both are first-class —
    the toggle and the OS preference both have to land on a real value. */
+/* Contrast ratios below are measured against --bg, not eyeballed. Body prose is
+   almost all --text-muted, so it is held to AAA (7:1) rather than the 4.5 that
+   the old #6B6E73 scraped past at 4.90. --border does the work of separating a
+   card from the page here, since --surface sits only 1.04 off --bg. */
 :root {
   --bg: #FAFAF9;
   --surface: #FFFFFF;
-  --border: #E4E4E2;
-  --text: #17181A;
-  --text-muted: #6B6E73;
-  --accent: #2A5FF0;
+  --border: #CFCFCB;      /* 1.50 on --bg */
+  --text: #17181A;        /* 17.0 */
+  --text-muted: #52555A;  /* 7.17 */
+  --accent: #1B47C4;      /* 7.32 */
   --accent-text: #FFFFFF;
+  /* The dot field's own colour, deliberately NOT --text-muted. Tying decorative
+     texture to a text token means every contrast improvement to prose makes the
+     background noisier — which is exactly what happened once muted went to AAA. */
+  --field-dot: #C9C9C5;
 
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-ar: "IBM Plex Sans Arabic", "Tahoma", "Segoe UI", sans-serif;
+  /* "IBM Plex Sans Arabic" sits in the stack so Arabic characters inside a
+     .mono element land on a real Arabic face — JetBrains Mono has no Arabic
+     glyphs, and the generic monospace fallback breaks the letter joins.
+     Latin still resolves to JetBrains Mono first. */
+  --font-mono: "JetBrains Mono", "IBM Plex Sans Arabic", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -35,24 +49,26 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0B0C0E;
-    --surface: #131518;
-    --border: #22252A;
-    --text: #E8E9EB;
-    --text-muted: #8A8F98;
-    --accent: #5B8DFF;
+    --surface: #16181C;
+    --border: #363B44;      /* 1.74 on --bg */
+    --text: #E8E9EB;        /* 16.1 */
+    --text-muted: #A7ACB5;  /* 8.58 */
+    --accent: #7BA5FF;      /* 8.08 */
     --accent-text: #0B0C0E;
+    --field-dot: #2B2F36;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
   --bg: #0B0C0E;
-  --surface: #131518;
-  --border: #22252A;
+  --surface: #16181C;
+  --border: #363B44;
   --text: #E8E9EB;
-  --text-muted: #8A8F98;
-  --accent: #5B8DFF;
+  --text-muted: #A7ACB5;
+  --accent: #7BA5FF;
   --accent-text: #0B0C0E;
+  --field-dot: #2B2F36;
   color-scheme: dark;
 }
 
@@ -76,6 +92,10 @@
 html {
   background: var(--bg);
   color-scheme: light dark;
+  /* The nav is anchors into one page, so a jump is the common case rather than
+     the rare one. Overridden back to `auto` under prefers-reduced-motion by the
+     block at the bottom of this file. */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -94,8 +114,14 @@ body {
   font-family: var(--font-mono);
 }
 
-a {
-  color: inherit;
+/* Must live in @layer base. Unlayered, this rule outranks every layered
+   Tailwind utility no matter the specificity, so `text-[var(--accent)]` and
+   `hover:text-[...]` on a link were silently doing nothing: the contact email
+   rendered as body text and the nav links had no hover colour at all. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 /* Motion respects the user's OS-level preference everywhere, not just
@@ -106,5 +132,137 @@ a {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Type scale ---------- */
+/* Fluid rather than two fixed breakpoint steps: the sections are full-screen
+   now, so headings that jump from one size to another at exactly 768px read as
+   a glitch on the way past. clamp() walks them instead. */
+@layer components {
+  .t-display {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 7.5vw, 5.25rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .t-h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .t-lead {
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  .t-body {
+    font-size: clamp(1rem, 1.45vw, 1.15rem);
+    line-height: 1.7;
+  }
+
+  /* Arabic is a connected script set in a different family, so it takes none of
+     the Latin display face and none of the negative tracking — letter-spacing
+     breaks the joins outright. It also sits optically smaller at the same px
+     and needs more leading, hence the bumps. */
+  :lang(ar) .t-display,
+  :lang(ar) .t-h2,
+  :lang(ar) .t-lead,
+  :lang(ar) .t-body {
+    font-family: var(--font-ar);
+    letter-spacing: normal;
+  }
+  :lang(ar) .t-display {
+    font-size: clamp(2.6rem, 7vw, 4.75rem);
+    line-height: 1.25;
+  }
+  :lang(ar) .t-h2 {
+    line-height: 1.45;
+  }
+  :lang(ar) .t-lead {
+    line-height: 1.6;
+  }
+  :lang(ar) .t-body {
+    font-size: clamp(1.05rem, 1.55vw, 1.2rem);
+    line-height: 2;
+  }
+}
+
+/* ---------- Section furniture ---------- */
+/* Shared so the four home screens read as chapters of one system rather than
+   four pages that happen to sit on top of each other, and so the case-study
+   pages stop drifting on their own older styles. */
+@layer components {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    padding: 0.3rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .btn-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.6rem;
+    background: var(--accent);
+    color: var(--accent-text);
+    padding: 0.8rem 1.4rem;
+    font-weight: 500;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .btn-accent:hover {
+    transform: translateX(0.25rem);
+  }
+  [dir="rtl"] .btn-accent:hover {
+    transform: translateX(-0.25rem);
+  }
+
+  /* A contact line you can aim at, rather than a bare underline. */
+  .link-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    transition:
+      border-color var(--duration-base) var(--ease-out),
+      transform var(--duration-base) var(--ease-out);
+  }
+  .link-row:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  /* Arabic takes none of the mono face or the letter-spacing: JetBrains Mono
+     has no Arabic glyphs, and tracking severs the joins between letters. */
+  :lang(ar) .eyebrow {
+    font-family: var(--font-ar);
+    font-size: 0.9rem;
+    letter-spacing: normal;
+    text-transform: none;
   }
 }
