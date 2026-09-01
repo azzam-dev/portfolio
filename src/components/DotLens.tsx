@@ -374,6 +374,24 @@ export default function DotLens(props: Props) {
                 return
             }
 
+            // Stand down over anything clickable. The lens puts its largest,
+            // brightest dots exactly under the pointer, which is exactly where
+            // the label of the thing you are about to click sits — so on a
+            // link or a button the effect competes with the text it is behind.
+            // Releasing the target eases the field back to its idle drift
+            // instead of cutting it, so this reads as the lens moving aside.
+            // event.target is used rather than elementFromPoint: the listener
+            // is on the window, so the topmost element is already in hand and
+            // no extra hit test is forced on every move.
+            const over = event.target
+            if (
+                over instanceof Element &&
+                over.closest("a, button, input, select, textarea, summary, label, [role='button'], [role='link']")
+            ) {
+                pointer.onTarget = 0
+                return
+            }
+
             pointer.rawX = clamp((event.clientX - rect.left) / rect.width, 0, 1)
             pointer.rawY = clamp((event.clientY - rect.top) / rect.height, 0, 1)
             pointer.onTarget = 1

@@ -12,15 +12,17 @@ const projects = await getCollection("projects", (entry) => entry.id.startsWith(
 const email = "azzamalfahad23@gmail.com";
 const [featured, ...rest] = projects;
 
-/* Drawn from the stacks actually shipped across these projects — correct it
-   rather than letting it drift into a wish list. */
+/* Taken from the skills section of the CV plus what the projects here actually
+   ship — not a wish list. Keep the two in step when either changes. */
 const tools = [
+  "Python",
+  "C++",
   "TypeScript",
-  "React",
+  "SQL",
+  "PyQt",
+  "OpenCV",
   "Next.js",
-  "Astro",
   "PostgreSQL",
-  "Supabase",
 ];
 
 const linkedinUrl = "https://www.linkedin.com/in/azzam-alfahad";
@@ -59,6 +61,18 @@ const panel =
         <p class="t-body text-[var(--text-muted)] max-w-2xl">
           {t("home.subline")}
         </p>
+
+        {/* download + type so the browser saves it rather than opening a
+            viewer tab, and the filename is the one people end up with. */}
+        <a
+          href="/Azzam-Alfahad-CV.pdf"
+          class="btn-accent btn-download mt-9"
+          download="Azzam-Alfahad-CV.pdf"
+          type="application/pdf"
+        >
+          {t("home.cv")}
+          <span aria-hidden="true">&darr;</span>
+        </a>
       </div>
     </section>
 
@@ -84,15 +98,18 @@ const panel =
           {t("about.heading")}
         </h2>
         <p class="t-lead max-w-2xl mb-6">
-          I'm a Computer Science builder — I start from a problem, then ask how to
-          build it, how the pieces connect, and how to make it simpler for whoever
-          uses it.
+          Computer Science graduate from Majmaah University. I spent a cooperative
+          training term as a software engineering intern at the National AI Center
+          (SDAIA) in Riyadh, building an internal tool that took friction out of the
+          team's day-to-day workflow.
         </p>
         <p class="t-body text-[var(--text-muted)] max-w-2xl mb-8">
-          The work I keep coming back to sits close to the hard part: authentication,
-          encryption, and the boundaries where a system decides what it is allowed to
-          know. Every project here comes with its reasoning attached — including the
-          options I turned down.
+          What I keep returning to is the boundary a system defends: authentication,
+          access control, and the point where a design decides what it is allowed to
+          know. That started with a desktop file vault in Python and PyQt that paired
+          a password with facial recognition, and carried into the web rewrite that
+          replaced it, where every one of those rules had to be re-established in a
+          browser that trusts nothing.
         </p>
         <p class="eyebrow mb-4">{t("about.workWith")}</p>
         <ul class="flex flex-wrap gap-2">

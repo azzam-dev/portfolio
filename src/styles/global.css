@@ -19,6 +19,10 @@
      texture to a text token means every contrast improvement to prose makes the
      background noisier — which is exactly what happened once muted went to AAA. */
   --field-dot: #C9C9C5;
+  /* Tinted with the accent rather than plain black, so the button reads as
+     lifting off the page instead of sitting on a grey smudge. */
+  --shadow-accent: 0 4px 14px -4px rgb(27 71 196 / 0.40);
+  --shadow-accent-strong: 0 10px 26px -6px rgb(27 71 196 / 0.55);
 
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
@@ -56,6 +60,8 @@
     --accent: #7BA5FF;      /* 8.08 */
     --accent-text: #0B0C0E;
     --field-dot: #2B2F36;
+    --shadow-accent: 0 4px 14px -4px rgb(0 0 0 / 0.55);
+    --shadow-accent-strong: 0 10px 26px -6px rgb(123 165 255 / 0.35);
     color-scheme: dark;
   }
 }
@@ -69,6 +75,8 @@
   --accent: #7BA5FF;
   --accent-text: #0B0C0E;
   --field-dot: #2B2F36;
+  --shadow-accent: 0 4px 14px -4px rgb(0 0 0 / 0.55);
+  --shadow-accent-strong: 0 10px 26px -6px rgb(123 165 255 / 0.35);
   color-scheme: dark;
 }
 
@@ -224,23 +232,51 @@ body {
   .btn-accent {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    border-radius: 0.6rem;
+    gap: 0.6rem;
+    border-radius: 0.75rem;
     background: var(--accent);
     color: var(--accent-text);
-    padding: 0.8rem 1.4rem;
-    font-weight: 500;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: var(--shadow-accent);
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out);
+  }
+  /* Lifts rather than slides. The old sideways nudge fought the arrow on the
+     download button, which points down, and moving the whole control off its
+     label reads as a glitch at speed. */
+  .btn-accent:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-accent-strong);
+  }
+  .btn-accent:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-accent);
+  }
+
+  /* The arrow moves the way it points: along the reading direction for a
+     "go there" link, downward for a download. */
+  .btn-accent > [aria-hidden] {
     transition: transform var(--duration-base) var(--ease-out);
   }
-  .btn-accent:hover {
-    transform: translateX(0.25rem);
+  .btn-accent:hover > [aria-hidden] {
+    transform: translateX(0.2rem);
   }
-  [dir="rtl"] .btn-accent:hover {
-    transform: translateX(-0.25rem);
+  [dir="rtl"] .btn-accent:hover > [aria-hidden] {
+    transform: translateX(-0.2rem);
+  }
+  .btn-download:hover > [aria-hidden],
+  [dir="rtl"] .btn-download:hover > [aria-hidden] {
+    transform: translateY(0.15rem);
   }
 
   /* A contact line you can aim at, rather than a bare underline. */
   .link-row {
+    /* Opaque, not transparent: even with the lens standing down over links,
+       the idle field still drifts and would otherwise wash under the text. */
+    background: var(--surface);
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -264,5 +300,24 @@ body {
     font-size: 0.9rem;
     letter-spacing: normal;
     text-transform: none;
+  }
+}
+
+/* ---------- Keyboard focus ---------- */
+/* Defined once, globally, rather than per component. The browser default ring
+   all but disappears against a filled accent button, and nothing in the project
+   was overriding it — so keyboard users had no reliable indicator anywhere. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 0.35rem;
+  }
+  /* On the filled button the accent ring would sit accent-on-accent, so the
+     ring flips to the page background and the offset supplies the contrast. */
+  .btn-accent:focus-visible {
+    outline-color: var(--bg);
+    outline-offset: 3px;
+    box-shadow: var(--shadow-accent-strong);
   }
 }
