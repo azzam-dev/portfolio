@@ -1,14 +1,14 @@
 ---
 slug: "secure-cloud-storage"
-title: "Secure Cloud Storage"
-problemOneLiner: "Every user's files in one database, one missing filter away from each other."
+title: "Secure File Storage"
+problemOneLiner: "A private place online for your files, reachable only from your own account."
 year: 2026
 status: "in-progress"
 
 surface:
-  what: "A multi-user file storage web app where every row and every file is scoped to one account, and that scoping is enforced by the database rather than by application code. A face scan is offered as an alternative to typing a password."
-  why: "Multi-tenant storage fails in one direction: a query that forgets a filter hands back somebody else's data. Putting the rule inside Postgres means the check cannot be skipped by whichever endpoint gets added next, or by whoever writes it."
-  forWhom: "People storing personal documents who need their account to be an enforced boundary, not a convention the code is trusted to remember."
+  what: "A web app for keeping personal files in the cloud: upload images, videos and documents up to 50 MB, see the space they use, and download or delete them anytime. No other account can reach them."
+  why: "Files kept on one device are lost with the device, and general sharing services make it easy to expose a file by mistake. Here files live off your device and stay private by default: nothing is public, and every download link stops working after 60 seconds, so a copied link is useless soon after."
+  forWhom: "Students and individuals who want a simple, private online space for personal documents such as certificates, study files and photos, without setting up folders, permissions or sharing settings."
 
 deep:
   layers:
