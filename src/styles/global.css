@@ -19,10 +19,16 @@
      texture to a text token means every contrast improvement to prose makes the
      background noisier — which is exactly what happened once muted went to AAA. */
   --field-dot: #C9C9C5;
-  /* Tinted with the accent rather than plain black, so the button reads as
-     lifting off the page instead of sitting on a grey smudge. */
-  --shadow-accent: 0 4px 14px -4px rgb(27 71 196 / 0.40);
-  --shadow-accent-strong: 0 10px 26px -6px rgb(27 71 196 / 0.55);
+  /* Hover DARKENS on light and LIGHTENS on dark. Both directions move away
+     from --accent-text, so the label gains contrast on hover instead of
+     losing it — the naive "always brighten" would have thinned white-on-blue. */
+  --accent-hover: #16389B;
+  --accent-tint: rgb(27 71 196 / 0.07);
+  /* Two layers, not one blur: a tight contact shadow gives the edge, the wide
+     ambient one gives the lift. A single blurred shadow reads as a smudge. */
+  --shadow-accent: 0 1px 2px rgb(27 71 196 / 0.30), 0 8px 20px -8px rgb(27 71 196 / 0.45);
+  --shadow-accent-strong: 0 2px 4px rgb(27 71 196 / 0.35), 0 14px 30px -8px rgb(27 71 196 / 0.55);
+  --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.20);
 
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
@@ -60,8 +66,11 @@
     --accent: #7BA5FF;      /* 8.08 */
     --accent-text: #0B0C0E;
     --field-dot: #2B2F36;
-    --shadow-accent: 0 4px 14px -4px rgb(0 0 0 / 0.55);
-    --shadow-accent-strong: 0 10px 26px -6px rgb(123 165 255 / 0.35);
+    --accent-hover: #9CBBFF;
+    --accent-tint: rgb(123 165 255 / 0.10);
+    --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.50), 0 8px 20px -8px rgb(0 0 0 / 0.60);
+    --shadow-accent-strong: 0 2px 4px rgb(0 0 0 / 0.55), 0 14px 30px -8px rgb(123 165 255 / 0.30);
+    --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.30);
     color-scheme: dark;
   }
 }
@@ -75,8 +84,11 @@
   --accent: #7BA5FF;
   --accent-text: #0B0C0E;
   --field-dot: #2B2F36;
-  --shadow-accent: 0 4px 14px -4px rgb(0 0 0 / 0.55);
-  --shadow-accent-strong: 0 10px 26px -6px rgb(123 165 255 / 0.35);
+  --accent-hover: #9CBBFF;
+  --accent-tint: rgb(123 165 255 / 0.10);
+  --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.50), 0 8px 20px -8px rgb(0 0 0 / 0.60);
+  --shadow-accent-strong: 0 2px 4px rgb(0 0 0 / 0.55), 0 14px 30px -8px rgb(123 165 255 / 0.30);
+  --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.30);
   color-scheme: dark;
 }
 
@@ -93,8 +105,14 @@
 }
 
 /* ---------- Base ---------- */
-* {
-  border-color: var(--border);
+/* In @layer base for the same reason as the `a` rule below: unlayered CSS
+   outranks every layered rule regardless of specificity, so this `*` was
+   overriding `border-color` everywhere — including .btn-ghost:hover, whose
+   accent border silently never applied. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 html {
@@ -229,31 +247,63 @@ body {
     white-space: nowrap;
   }
 
-  .btn-accent {
+  /* Shared geometry, so a filled button and an outlined one line up in the same
+     row instead of differing by a pixel or two of padding. min-height also
+     keeps the two locales matched — Arabic and Latin faces resolve to
+     different line boxes at the same font-size. */
+  .btn-accent,
+  .btn-ghost {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
+    min-height: 3rem;
     border-radius: 0.75rem;
-    background: var(--accent);
-    color: var(--accent-text);
-    padding: 0.85rem 1.6rem;
+    padding: 0.75rem 1.5rem;
     font-weight: 600;
     letter-spacing: -0.01em;
-    box-shadow: var(--shadow-accent);
     transition:
       transform var(--duration-base) var(--ease-out),
-      box-shadow var(--duration-base) var(--ease-out);
+      box-shadow var(--duration-base) var(--ease-out),
+      background-color var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) var(--ease-out);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--accent-text);
+    /* Sheen first so it paints over the fill: a one-pixel lit top edge is what
+       separates a rendered control from a coloured rectangle. */
+    box-shadow: var(--btn-sheen), var(--shadow-accent);
   }
   /* Lifts rather than slides. The old sideways nudge fought the arrow on the
      download button, which points down, and moving the whole control off its
-     label reads as a glitch at speed. */
+     label reads as a glitch at speed. The colour shift is the second channel:
+     motion alone leaves nothing for anyone whose transitions are turned off. */
   .btn-accent:hover {
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-accent-strong);
+    box-shadow: var(--btn-sheen), var(--shadow-accent-strong);
   }
   .btn-accent:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-accent);
+    transform: translateY(0) scale(0.98);
+    box-shadow: var(--btn-sheen), var(--shadow-accent);
+  }
+
+  /* The middle tier. Repo and Live links sat as bare underlines beside a filled
+     call to action — nothing between no emphasis and maximum emphasis. */
+  .btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+    transform: translateY(-1px);
+  }
+  .btn-ghost:active {
+    transform: translateY(0) scale(0.98);
   }
 
   /* The arrow moves the way it points: along the reading direction for a

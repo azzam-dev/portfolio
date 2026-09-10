@@ -54,3 +54,52 @@ const section = (id: string) => `${home}#${id}`;
     </div>
   </div>
 </header>
+
+<script is:inline>
+  /* A smooth anchor jump under `scroll-snap-type: y mandatory` bounces back to
+     the section it started from on phones: the browser still holds the old
+     section as its snap target, and the toolbar collapsing mid-scroll resizes
+     the viewport, which makes it re-snap to that target. So for anchors into
+     this page, snapping is switched off for the jump and handed back once the
+     scroll has settled — at which point the nearest snap point is the target
+     itself, so nothing moves. Links to another page are left to the browser. */
+  (function () {
+    const root = document.documentElement;
+    const here = location.pathname.replace(/\/$/, "");
+    let settle;
+
+    function release() {
+      root.style.scrollSnapType = "";
+      window.removeEventListener("scroll", onScroll);
+    }
+
+    function waitForQuiet(ms) {
+      clearTimeout(settle);
+      settle = setTimeout(release, ms);
+    }
+
+    function onScroll() {
+      waitForQuiet(150);
+    }
+
+    document.querySelectorAll("header nav a[href*='#']").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const url = new URL(link.href);
+        if (url.pathname.replace(/\/$/, "") !== here) return;
+        const target = document.getElementById(url.hash.slice(1));
+        if (!target) return;
+
+        event.preventDefault();
+        root.style.scrollSnapType = "none";
+        window.addEventListener("scroll", onScroll, { passive: true });
+        // Longer before the first scroll event: a janky first frame (the dot
+        // field is a shader) must not hand snapping back before the jump starts.
+        waitForQuiet(400);
+        // No options, so it follows the CSS scroll-behavior: smooth normally,
+        // instant under prefers-reduced-motion.
+        target.scrollIntoView();
+        if (location.hash !== url.hash) history.pushState(null, "", url.hash);
+      });
+    });
+  })();
+</script>

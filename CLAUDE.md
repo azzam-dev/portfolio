@@ -1,11 +1,11 @@
-| `src/styles/global.css` | توكنز التصميم (فاتح/داكن عبر CSS variables) + مقياس الخط السائل `.t-*` في `@layer components` |# Portfolio
+# Portfolio
 
 موقع شخصي ثنائي اللغة (En/Ar) لعرض المشاريع بنمط "Surface / Under the Hood" —
 سطح بسيط للجميع، وطبقة تقنية عميقة تنكشف بالضغط لمن يفضّل التفاصيل.
 
 ## Stack
 
-- **Astro 5** (static output) + **@astrojs/react** (جزيرة تفاعلية واحدة فقط) + **@astrojs/mdx**
+- **Astro 5** (static output) + **@astrojs/react** (جزيرتان تفاعليتان — انظر Conventions) + **@astrojs/mdx**
 - **Tailwind v4** عبر `@tailwindcss/vite` — بدون ملف config، التوكنز في `src/styles/global.css`
 - **TypeScript** (strict, عبر `astro/tsconfigs/strict`)
 - **Node 24.x** (LTS) — مطلوب محليًا لتشغيل npm/astro
@@ -26,13 +26,14 @@ npm run preview
 
 | المسار | المسؤولية |
 |---|---|
-| `src/pages/` + `src/pages/ar/` | الصفحات — مرآة 1:1 (en بدون بادئة، ar تحت `/ar`). **الموقع صفحة واحدة**: `index.astro` يحوي كل الأقسام (`#work`, `#about`, `#contact`)، ولم يبقَ غيرها إلا صفحتا دراسة الحالة `/work/[slug]` و`/work/[slug]/deep` |
+| `src/pages/` + `src/pages/ar/` | الصفحات — مرآة 1:1 (en بدون بادئة، ar تحت `/ar`). **الموقع صفحة واحدة**: `index.astro` يحوي كل الأقسام (`#top`, `#work`, `#about`, `#contact`)، ولم يبقَ غيرها إلا صفحتا دراسة الحالة `/work/[slug]` و`/work/[slug]/deep` |
 | `src/content/projects/{en,ar}/` | محتوى دراسات الحالة (MDX)، يُتحقق منه بـ Zod schema |
 | `src/content/config.ts` | الـ schema + `generateId` مخصص (**حساس**، انظر أدناه) |
-| `src/components/` | Header, ThemeToggle, LanguageToggle, ProjectCard (Astro) + LayerReveal, DotLens, DotLensBackground (React) |
+| `src/components/` | Header, ThemeToggle, LanguageToggle, ProjectCard, FeaturedProject (Astro) + LayerReveal, DotLens, DotLensBackground (React) |
 | `src/layouts/Base.astro` | الهيكل المشترك: `<head>`, سكربت منع وميض الثيم, Header |
 | `src/i18n/` | `ui.ts` (قاموس الترجمة) + `utils.ts` (`useTranslations`, `localizedPath`, `dirFor`) |
-| `src/styles/global.css` | توكنز التصميم (فاتح/داكن عبر CSS variables + `@theme`) |
+| `src/styles/global.css` | توكنز التصميم (فاتح/داكن) + مقياس الخط السائل `.t-*` + قوالب `.eyebrow` `.chip` `.btn-accent` `.btn-ghost` `.link-row`، كلها في `@layer components` |
+| `public/` | يُخدَم كما هو: `favicon.svg` و`Azzam-Alfahad-CV.pdf` (زر تحميل السيرة في الـhero يشير إليه) |
 
 ## Conventions المتّبعة فعليًا
 
@@ -75,7 +76,10 @@ npm run preview
 - **لا تجعل قسمًا أطول من الشاشة.** التخطيط شاشة واحدة لكل قسم مع
   `scroll-snap-type: y mandatory`؛ قسم يفيض يجعل الالتقاط يقاوم المستخدم. لهذا
   `panel` يستعمل `min-h-svh` لا `h-svh` (لا يقص المحتوى) وهناك
-  `@media (max-height: 620px)` يطفئ الالتقاط على الشاشات القصيرة.
+  `@media (max-height: 700px)` يطفئ الالتقاط على الشاشات القصيرة. أسوأ حالة
+  والالتقاط شغّال هي جوال **375×701** — قِس عليها بعد أي تعديل نص. الفقرة الثانية
+  في "نبذة" `hidden sm:block` عمدًا (معها القسم 900px على الجوال)، و"الأعمال"
+  هامشه على هذا المقاس **6px فقط**: أي سطر زائد في وصف المشروع الأول يُفيضه.
 - **لا تنقل قاعدة `scroll-snap-type` إلى `global.css`.** هي في `<style is:global>`
   داخل صفحتَي الرئيسية عمدًا، لأن Astro يشحن أنماط الصفحة مع تلك الصفحة وحدها —
   نقلها يفرض الالتقاط على صفحات دراسة الحالة التي لا أقسام لها.
@@ -91,6 +95,11 @@ npm run preview
 - **لا تُسقط تجاوزات `:lang(ar)` للمقياس.** العربية تأخذ `--font-ar` و
   `letter-spacing: normal` وارتفاع سطر أوسع: خط العرض اللاتيني بلا محارف
   عربية، والـtracking السالب يفصل الحروف المتصلة.
+- **لا تحذف سكربت القفز في `Header.astro`.** قفزة مرسى ناعمة تحت
+  `scroll-snap-type: y mandatory` ترتدّ إلى القسم الذي بدأت منه على الجوال (المتصفح
+  ما زال يعتبره هدف الالتقاط، وانطواء شريط المتصفح أثناء التمرير يعيد الالتقاط
+  إليه) — حصل فعليًا على الموقع المنشور. السكربت يطفئ الالتقاط أثناء القفزة
+  ويعيده بعد أن يسكن التمرير.
 - **روابط التنقّل تبقى مطلقة (`/#work`) لا مجرّدة (`#work`).** الشريط نفسه يظهر
   على صفحات دراسة الحالة، والمجرّدة تبحث عن القسم داخل تلك الصفحة فلا تجده.
 - **لا تكتب `uppercase` أو `tracking-widest` على نص عربي.** الـletter-spacing
@@ -107,7 +116,8 @@ npm run preview
   ~1.5، زخرفة لا نص). ربطه بتوكن نص يعني أن كل تحسين لتباين القراءة يزيد
   ضجيج الخلفية — حصل فعليًا.
 - **لا تكتب قواعد CSS خارج `@layer`** في `global.css`. CSS غير مُطبَّق يتغلّب
-  على كل طبقات Tailwind مهما كانت الـspecificity. قاعدة `a { color: inherit }`
+  على كل طبقات Tailwind مهما كانت الـspecificity. حصل هذا **مرتين**: `a { color: inherit }`
+  ألغت ألوان الروابط، و`* { border-color }` ألغت حدّ `.btn-ghost:hover`. قاعدة `a { color: inherit }`
   غير المُطبَّقة كانت تُلغي `text-[var(--accent)]` و`hover:text-[…]` على كل
   رابط بصمت — بريد التواصل كان يُعرض بلون النص العادي وروابط التنقّل بلا hover.
   **الاستثناء الوحيد `DotLensBackground.tsx`:** الشيدر يقرأ سلاسل hex ولا يفهم

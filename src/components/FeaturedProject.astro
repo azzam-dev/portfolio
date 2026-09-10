@@ -20,16 +20,18 @@ const statusLabel = t(`project.status.${status}`);
 ---
 
 <article>
-  <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2 mb-4">
+  {/* The mobile-only margins are what let Work fit one 375×701 screen; md:
+      restores the desktop rhythm. */}
+  <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2 mb-3 md:mb-4">
     <h3 class="t-lead">{title}</h3>
     <span class="mono text-sm text-[var(--text-muted)]" dir="ltr">{year}</span>
     <span class="chip">{statusLabel}</span>
   </div>
 
   <p class="t-body text-[var(--text)] max-w-2xl mb-4">{problemOneLiner}</p>
-  <p class="t-body text-[var(--text-muted)] max-w-2xl mb-7">{surface.what}</p>
+  <p class="t-body text-[var(--text-muted)] max-w-2xl mb-5 md:mb-7">{surface.what}</p>
 
-  <ul class="flex flex-wrap gap-2 mb-9">
+  <ul class="flex flex-wrap gap-2 mb-5 md:mb-9">
     {stack.map((item) => <li class="chip" dir="ltr">{item}</li>)}
   </ul>
 

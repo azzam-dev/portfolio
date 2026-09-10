@@ -32,9 +32,11 @@ const linkedinLabel = "linkedin.com/in/azzam-alfahad";
 
 /* One screen per section. min-h-svh rather than h-svh so a section that
    outgrows the viewport keeps scrolling instead of clipping, and svh rather
-   than vh so mobile browser chrome doesn't push the bottom out of reach. */
+   than vh so mobile browser chrome doesn't push the bottom out of reach.
+   pb-6 on phones because Work only fits a 375×701 screen with it; pt stays at
+   20 since the sticky header covers the top 65px of every section. */
 const panel =
-  "min-h-svh flex flex-col justify-center snap-start snap-always px-5 pt-20 pb-12 md:pt-24 md:pb-16";
+  "min-h-svh flex flex-col justify-center snap-start snap-always px-5 pt-20 pb-6 md:pt-24 md:pb-16";
 ---
 
 <Base
@@ -84,7 +86,7 @@ const panel =
     <section id="work" class={panel}>
       <div class="max-w-4xl mx-auto w-full">
         <p class="eyebrow mb-3">01 / {t("nav.work")}</p>
-        <h2 class="t-h2 mb-7">
+        <h2 class="t-h2 mb-5 md:mb-7">
           {t("home.workHeading")}
         </h2>
         {featured && <FeaturedProject locale={locale} project={featured} />}
@@ -99,15 +101,18 @@ const panel =
     <section id="about" class={panel}>
       <div class="max-w-4xl mx-auto w-full">
         <p class="eyebrow mb-3">02 / {t("nav.about")}</p>
-        <h2 class="t-h2 mb-7">
+        <h2 class="t-h2 mb-5 md:mb-7">
           {t("about.heading")}
         </h2>
-        <p class="t-lead max-w-2xl mb-6">
+        {/* The second paragraph is sm-and-up only: with it, About is 900px tall
+            on a 375px phone and overflows a snapped screen by ~200px. Without
+            it, the lead takes the larger gap so the tools list keeps its air. */}
+        <p class="t-lead max-w-2xl mb-8 sm:mb-6">
           خرّيج علوم حاسب من جامعة المجمعة. قضيت فترة تدريب تعاوني مهندسَ برمجيات
           متدرّبًا في المركز الوطني للذكاء الاصطناعي (سدايا) بالرياض، حيث بنيت أداة
           داخلية خفّفت الاحتكاك في سير عمل الفريق اليومي.
         </p>
-        <p class="t-body text-[var(--text-muted)] max-w-2xl mb-8">
+        <p class="hidden sm:block t-body text-[var(--text-muted)] max-w-2xl mb-8">
           ما أعود إليه دائمًا هو الحدّ الذي يدافع عنه النظام: المصادقة، والتحكّم في
           الوصول، والنقطة التي يقرّر عندها التصميم ما الذي يُسمح له بمعرفته. بدأ ذلك
           بخزنة ملفات على سطح المكتب بـPython وPyQt تجمع كلمة المرور مع التعرّف على
