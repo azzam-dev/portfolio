@@ -82,6 +82,14 @@ const section = (id: string) => `${home}#${id}`;
       waitForQuiet(150);
     }
 
+    function holdSnap() {
+      root.style.scrollSnapType = "none";
+      window.addEventListener("scroll", onScroll, { passive: true });
+      // Longer before the first scroll event: a janky first frame (the dot
+      // field is a shader) must not hand snapping back before the jump starts.
+      waitForQuiet(400);
+    }
+
     document.querySelectorAll("header nav a[href*='#']").forEach((link) => {
       link.addEventListener("click", (event) => {
         const url = new URL(link.href);
@@ -90,16 +98,29 @@ const section = (id: string) => `${home}#${id}`;
         if (!target) return;
 
         event.preventDefault();
-        root.style.scrollSnapType = "none";
-        window.addEventListener("scroll", onScroll, { passive: true });
-        // Longer before the first scroll event: a janky first frame (the dot
-        // field is a shader) must not hand snapping back before the jump starts.
-        waitForQuiet(400);
+        holdSnap();
         // No options, so it follows the CSS scroll-behavior: smooth normally,
         // instant under prefers-reduced-motion.
         target.scrollIntoView();
         if (location.hash !== url.hash) history.pushState(null, "", url.hash);
       });
     });
+
+    /* Arriving with a hash — from the language toggle, or a nav link on a
+       case-study page — the browser's own load-time jump is smooth as well, and
+       starts from the top section, so it can bounce back the same way. Land on
+       the section instantly instead, with snapping held off until it settles. */
+    function landOnHash() {
+      const target = location.hash && document.getElementById(location.hash.slice(1));
+      if (!target || target.tagName !== "SECTION") return;
+      holdSnap();
+      target.scrollIntoView({ behavior: "instant" });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", landOnHash, { once: true });
+    } else {
+      landOnHash();
+    }
   })();
 </script>

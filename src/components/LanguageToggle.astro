@@ -12,9 +12,36 @@ const label = locale === "en" ? "العربية" : "English";
 ---
 
 <a
+  id="lang-toggle"
   href={targetPath}
   aria-label={t("lang.toggle")}
   class="mono text-sm px-2 py-1 rounded-md border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--text-muted)] transition-colors"
 >
   {label}
 </a>
+
+<script is:inline>
+  /* The href is built on the server from the path alone — a hash never reaches
+     the server — so switching from /#contact used to land on the top of /ar/.
+     At click time, carry over whichever section is at the middle of the screen.
+     That is read from the layout rather than location.hash, which goes stale
+     as soon as someone scrolls by wheel instead of using the nav. Both home
+     pages use the same section ids; pages without sections keep the bare path. */
+  (function () {
+    const link = document.getElementById("lang-toggle");
+
+    function carrySection() {
+      const middle = window.innerHeight / 2;
+      const current = Array.from(document.querySelectorAll("main section[id]")).find((section) => {
+        const rect = section.getBoundingClientRect();
+        return rect.top <= middle && rect.bottom > middle;
+      });
+      const base = link.href.split("#")[0];
+      link.href = current ? `${base}#${current.id}` : base;
+    }
+
+    link.addEventListener("click", carrySection);
+    // Middle-click opens a new tab without firing "click".
+    link.addEventListener("auxclick", carrySection);
+  })();
+</script>
