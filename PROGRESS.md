@@ -23,10 +23,11 @@ Vercel عند كل push عبر GitHub App.
   `gh api repos/azzam-dev/portfolio/deployments --jq '.[0].sha[0:7]'`.
 - **الرابط العام:** `https://portfolio-iota-ten-2fmes3t5ce.vercel.app` — مُتحقَّق
   2026-09-10 بلا تسجيل دخول: `/` و`/ar/` وصفحة دراسة الحالة ترد 200، ملف السيرة
-  يرد 200 بـ`application/pdf`، و`/about` يرد 404 (مقصود). ويخدم محتوى `a9950c7`.
+  يرد 200 بـ`application/pdf`، و`/about` يرد 404 (مقصود). ويخدم آخر push.
   **انتبه:** روابط `*-me-5abe.vercel.app` (ومنها `portfolio-me-5abe.vercel.app`
-  و`target_url` في سجل النشر على GitHub) **ما زالت** ترد `302 → sso-api`. لم
-  يُتحقَّق بعد أن الرابط العام يتبع كل push تلقائيًا — تأكّد منه بعد الـpush القادم.
+  و`target_url` في سجل النشر على GitHub) **ما زالت** ترد `302 → sso-api`. الرابط
+  العام يتبع كل push تلقائيًا — مُتحقَّق مع `d6dc54f`: ظهر فيه سكربت زر اللغة
+  الجديد بعد اكتمال النشر.
 
 ### الموقع صفحة واحدة
 - الأعمال والنبذة والتواصل **أقسام** داخل `index.astro` (`#top`, `#work`,
