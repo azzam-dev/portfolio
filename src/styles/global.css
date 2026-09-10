@@ -29,6 +29,10 @@
   --shadow-accent: 0 1px 2px rgb(27 71 196 / 0.30), 0 8px 20px -8px rgb(27 71 196 / 0.45);
   --shadow-accent-strong: 0 2px 4px rgb(27 71 196 / 0.35), 0 14px 30px -8px rgb(27 71 196 / 0.55);
   --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.20);
+  /* The resting state of a photo in a ChromaGrid-style card: drained to grey.
+     Dark also dims it (ChromaGrid's brightness 0.78), so white paper doesn't
+     glare off a dark page. Colour comes back only under the pointer. */
+  --chroma-filter: grayscale(1);
 
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
@@ -71,6 +75,7 @@
     --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.50), 0 8px 20px -8px rgb(0 0 0 / 0.60);
     --shadow-accent-strong: 0 2px 4px rgb(0 0 0 / 0.55), 0 14px 30px -8px rgb(123 165 255 / 0.30);
     --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.30);
+    --chroma-filter: grayscale(1) brightness(0.78);
     color-scheme: dark;
   }
 }
@@ -89,7 +94,23 @@
   --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.50), 0 8px 20px -8px rgb(0 0 0 / 0.60);
   --shadow-accent-strong: 0 2px 4px rgb(0 0 0 / 0.55), 0 14px 30px -8px rgb(123 165 255 / 0.30);
   --btn-sheen: inset 0 1px 0 rgb(255 255 255 / 0.30);
+  --chroma-filter: grayscale(1) brightness(0.78);
   color-scheme: dark;
+}
+
+/* Registered so the spotlight centre can transition: an unregistered custom
+   property is a string and jumps. This transition is what stands in for
+   ChromaGrid's GSAP damping. Browsers without @property still work — the
+   spotlight just follows without the lag. */
+@property --chroma-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+@property --chroma-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
 }
 
 @theme {
@@ -341,6 +362,124 @@ body {
   .link-row:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
+  }
+
+  /* ---------- Tilted card (TiltedCard.astro) ---------- */
+  /* The button is the untransformed hit area the pointer is measured against;
+     only the inner layer tilts, so the rect the maths reads never rotates under
+     it. Colour follows ChromaGrid: the photo rests in grey, and a full-colour
+     copy on top shows through a radial mask centred on the pointer. */
+  .tilt-card__face {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    perspective: 800px;
+    border-radius: 0.9rem;
+  }
+  .tilt-card__inner {
+    position: relative;
+    display: block;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 0.9rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 18px 40px -18px rgb(0 0 0 / 0.35);
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--s, 1));
+    transition:
+      transform 180ms var(--ease-out),
+      border-color var(--duration-base) var(--ease-out);
+    will-change: transform;
+  }
+  .tilt-card__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: var(--chroma-filter);
+  }
+  /* ChromaGrid's mask, inverted: its overlay greys everything but the pointer;
+     this layer is colour that shows only around it. Same stops, 1 − alpha.
+     The centre trails the pointer by --chroma-damping on GSAP's power3.out
+     curve, and the layer fades out over --chroma-fade when the pointer leaves. */
+  .tilt-card__color {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    --chroma-mask: radial-gradient(
+      circle var(--chroma-r, 300px) at var(--chroma-x) var(--chroma-y),
+      rgb(0 0 0) 0%,
+      rgb(0 0 0) 15%,
+      rgb(0 0 0 / 0.9) 30%,
+      rgb(0 0 0 / 0.78) 45%,
+      rgb(0 0 0 / 0.65) 60%,
+      rgb(0 0 0 / 0.5) 75%,
+      rgb(0 0 0 / 0.32) 88%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--chroma-mask);
+    mask-image: var(--chroma-mask);
+    transition:
+      opacity var(--chroma-fade, 0.6s) ease,
+      --chroma-x var(--chroma-damping, 0.45s) cubic-bezier(0.33, 1, 0.68, 1),
+      --chroma-y var(--chroma-damping, 0.45s) cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  /* Only where hover exists: a touch browser leaves :hover stuck on whatever
+     was tapped last, so on a phone the card stays grey and the tap opens the
+     full-colour certificate instead. */
+  @media (hover: hover) {
+    .tilt-card__face:hover .tilt-card__color {
+      opacity: 1;
+      transition-duration: var(--duration-base), var(--chroma-damping, 0.45s), var(--chroma-damping, 0.45s);
+    }
+    .tilt-card__face:hover .tilt-card__inner {
+      border-color: var(--accent);
+    }
+  }
+  /* Keyboard focus has no pointer to follow, so it gets the whole card. */
+  .tilt-card__face:focus-visible .tilt-card__color {
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .tilt-card__viewer {
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    /* An explicit width, not just a max: a dialog shrinks to fit its content,
+       and an image at width:100% of a shrink-to-fit box collapses to nothing. */
+    width: min(92vw, 1100px);
+    max-width: none;
+    max-height: 90svh;
+    overflow: visible;
+  }
+  .tilt-card__viewer::backdrop {
+    background: rgb(0 0 0 / 0.78);
+  }
+  .tilt-card__viewer img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: calc(90svh - 3.5rem);
+    object-fit: contain;
+    border-radius: 0.6rem;
+  }
+  .tilt-card__close {
+    display: block;
+    margin: 0.75rem auto 0;
+    min-height: 2.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.6rem;
+    /* White on the dark backdrop in both themes — the backdrop doesn't theme. */
+    border: 1px solid rgb(255 255 255 / 0.35);
+    color: rgb(255 255 255);
+    background: rgb(255 255 255 / 0.08);
+    font-weight: 600;
   }
 
   /* Arabic takes none of the mono face or the letter-spacing: JetBrains Mono

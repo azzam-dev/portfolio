@@ -4,6 +4,8 @@ import Base from "../../layouts/Base.astro";
 import DotLensBackground from "../../components/DotLensBackground";
 import ProjectCard from "../../components/ProjectCard.astro";
 import FeaturedProject from "../../components/FeaturedProject.astro";
+import TiltedCard from "../../components/TiltedCard.astro";
+import certificate from "../../assets/sdaia-coop-certificate.png";
 import { useTranslations } from "../../i18n/utils";
 
 const locale = "ar" as const;
@@ -25,6 +27,23 @@ const tools = [
   "PostgreSQL",
 ];
 
+/* Distilled from the three co-op progress reports (weeks 3, 6 and 8). The
+   reports themselves stay unpublished — they carry the supervisor's phone and
+   email. Keep each line to what a report actually states, and in step with
+   the English page. */
+const coop = {
+  role: "مهندس برمجيات متدرّب · إدارة هندسة الجودة",
+  org: "سدايا — المركز الوطني للذكاء الاصطناعي، الرياض",
+  dates: "أغسطس – أكتوبر 2025",
+  points: [
+    "طوّرت ماكرو في Dataiku DSS يؤتمت عمليات الفريق المتكررة.",
+    "بنيت فحوصات لجودة البيانات ومقاييس للأداء وسيناريوهات لمراقبة آلية وتنبيهات في Dataiku DSS.",
+    "اختبرت الواجهة الخلفية للمشروع (الاستقرار ودقة البيانات وأداء المعالجة)، وحدّثت ملفاتها لتتوافق مع تحديثات النظام.",
+    "تحققت من اتساق بيانات قاعدة البيانات، ووثّقت نتائج الاختبارات للفريق.",
+  ],
+  tags: ["Dataiku DSS", "Back-end testing", "Data quality", "Automation"],
+};
+
 const linkedinUrl = "https://www.linkedin.com/in/azzam-alfahad";
 /* Shown without the "www." — it is 4 characters of nothing, and the value
    column is the tightest thing on a 375px screen. */
@@ -44,7 +63,7 @@ const panel =
   title="عزام الفهد — أبني أشياء معقّدة بتجارب بسيطة."
   description={t("home.subline")}
 >
-  {/* One page. The header's Work/About/Contact links are anchors into the
+  {/* One page. The header's links are anchors into the
       sections below, not routes. `isolate` gives the field's negative z-index a
       context of its own, so it lands above the page background instead of
       behind it. Nothing here needs pointer-events juggling: the field reads the
@@ -98,19 +117,61 @@ const panel =
       </div>
     </section>
 
+    {/* The one section allowed to outgrow a phone screen (owner's call: all
+        four points and the card, scrolled, rather than a trimmed version). The
+        pin at its bottom is a second snap stop aligned to the screen's bottom
+        edge, so mandatory snapping stops at its end too instead of jumping from
+        its top straight to About. When the section fits, the pin's stop is the
+        section's own, so nothing changes there. */}
+    <section id="experience" class:list={[panel, "relative"]}>
+      <span class="absolute inset-x-0 bottom-0 h-px snap-end snap-always" aria-hidden="true"></span>
+      <div class="max-w-4xl mx-auto w-full">
+        <p class="eyebrow mb-3">02 / {t("nav.experience")}</p>
+        <h2 class="t-h2 mb-5 md:mb-7">
+          {t("experience.heading")}
+        </h2>
+        <div class="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:gap-12 md:items-center">
+          <div>
+            <h3 class="t-lead">{coop.role}</h3>
+            <p class="t-body text-[var(--text-muted)] mt-1">
+              {coop.org} · <span class="whitespace-nowrap">{coop.dates}</span>
+            </p>
+            <ul class="t-body mt-4 space-y-2 list-disc ps-5 marker:text-[var(--accent)]">
+              {coop.points.map((point) => <li>{point}</li>)}
+            </ul>
+            <ul class="flex flex-wrap gap-2 mt-5">
+              {coop.tags.map((tag) => <li class="chip" dir="ltr">{tag}</li>)}
+            </ul>
+          </div>
+          <div class="justify-self-center">
+            <TiltedCard
+              src={certificate}
+              alt="شهادة التدريب التعاوني من سدايا باسم عزام بن عبدالله جارالله الفهد، من 24 أغسطس إلى 19 أكتوبر 2025"
+              caption={t("experience.certificate")}
+              openLabel={t("experience.view")}
+              closeLabel={t("experience.close")}
+              rotateAmplitude={7}
+              scaleOnHover={1.08}
+              width="clamp(11rem, 55vw, 18rem)"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="about" class={panel}>
       <div class="max-w-4xl mx-auto w-full">
-        <p class="eyebrow mb-3">02 / {t("nav.about")}</p>
+        <p class="eyebrow mb-3">03 / {t("nav.about")}</p>
         <h2 class="t-h2 mb-5 md:mb-7">
           {t("about.heading")}
         </h2>
-        {/* The second paragraph is sm-and-up only: with it, About is 900px tall
-            on a 375px phone and overflows a snapped screen by ~200px. Without
-            it, the lead takes the larger gap so the tools list keeps its air. */}
+        {/* The second paragraph is sm-and-up only: with it, About does not fit a
+            375×701 phone screen (it ran ~200px over with the co-op sentence, and
+            is still ~20px over without it). Without it, the lead takes the larger
+            gap so the tools list keeps its air. The co-op term lives in
+            Experience now. */}
         <p class="t-lead max-w-2xl mb-8 sm:mb-6">
-          خرّيج علوم حاسب من جامعة المجمعة. قضيت فترة تدريب تعاوني مهندسَ برمجيات
-          متدرّبًا في المركز الوطني للذكاء الاصطناعي (سدايا) بالرياض، حيث بنيت أداة
-          داخلية خفّفت الاحتكاك في سير عمل الفريق اليومي.
+          خرّيج علوم حاسب من جامعة المجمعة.
         </p>
         <p class="hidden sm:block t-body text-[var(--text-muted)] max-w-2xl mb-8">
           ما أعود إليه دائمًا هو الحدّ الذي يدافع عنه النظام: المصادقة، والتحكّم في
@@ -128,7 +189,7 @@ const panel =
 
     <section id="contact" class={panel}>
       <div class="max-w-4xl mx-auto w-full">
-        <p class="eyebrow mb-3">03 / {t("nav.contact")}</p>
+        <p class="eyebrow mb-3">04 / {t("nav.contact")}</p>
         <h2 class="t-h2 mb-6">
           {t("contact.heading")}
         </h2>

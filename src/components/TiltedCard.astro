@@ -1,0 +1,148 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image, getImage } from "astro:assets";
+
+/**
+ * The React Bits TiltedCard effect without React or motion: the card leans
+ * toward the pointer and grows a little on hover. Colour is ChromaGrid's, also
+ * without its GSAP: the photo rests in grey and a spotlight of real colour
+ * trails the pointer. It is a button — pressing it opens the full image in a
+ * native <dialog>, in its real colours, which is how a phone (no hover) gets to
+ * see it in colour. Styles: `.tilt-card*` in global.css.
+ */
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption: string;
+  openLabel: string;
+  closeLabel: string;
+  /** Maximum lean, in degrees, at the card's edge. */
+  rotateAmplitude?: number;
+  scaleOnHover?: number;
+  /** CSS width of the card, e.g. "clamp(13rem, 60vw, 18rem)". */
+  width?: string;
+  /** ChromaGrid props: spotlight radius (px), how long its centre takes to
+      catch the pointer (s), and how long the colour takes to fade out (s). */
+  radius?: number;
+  damping?: number;
+  fadeOut?: number;
+}
+
+const {
+  src,
+  alt,
+  caption,
+  openLabel,
+  closeLabel,
+  rotateAmplitude = 7,
+  scaleOnHover = 1.08,
+  width = "18rem",
+  radius = 300,
+  damping = 0.45,
+  fadeOut = 0.6,
+} = Astro.props;
+
+const sizes = `(min-width: 768px) ${width}, 70vw`;
+const style = [
+  `width: ${width}`,
+  "max-width: 100%",
+  `--chroma-r: ${radius}px`,
+  `--chroma-damping: ${damping}s`,
+  `--chroma-fade: ${fadeOut}s`,
+].join("; ");
+
+// The viewer's copy: big enough to read the small print on a laptop, but not
+// the 2.5k-wide source.
+const full = await getImage({ src, width: 1600, format: "webp" });
+---
+
+<figure class="tilt-card" style={style}>
+  <button
+    type="button"
+    class="tilt-card__face"
+    aria-label={openLabel}
+    aria-haspopup="dialog"
+    data-tilt-amplitude={rotateAmplitude}
+    data-tilt-scale={scaleOnHover}
+  >
+    <span class="tilt-card__inner">
+      <Image src={src} alt={alt} widths={[320, 480, 640]} sizes={sizes} class="tilt-card__img" />
+      {/* Same widths and sizes as the grey copy, so the browser picks the same
+          file and fetches it once. Decorative: the grey copy carries the alt. */}
+      <Image src={src} alt="" widths={[320, 480, 640]} sizes={sizes} class="tilt-card__color" aria-hidden="true" />
+    </span>
+  </button>
+  <figcaption class="mt-3 text-sm text-[var(--text-muted)] text-center">{caption}</figcaption>
+
+  <dialog class="tilt-card__viewer" aria-label={caption}>
+    <img src={full.src} alt={alt} width={full.attributes.width} height={full.attributes.height} loading="lazy" decoding="async" />
+    <button type="button" class="tilt-card__close">{closeLabel}</button>
+  </dialog>
+</figure>
+
+<script is:inline>
+  (function () {
+    // Tilt only where there is a real pointer to follow, and not for anyone who
+    // has asked the OS for less motion.
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    document.querySelectorAll(".tilt-card").forEach((card) => {
+      if (card.dataset.ready) return;
+      card.dataset.ready = "1";
+
+      const face = card.querySelector(".tilt-card__face");
+      const inner = card.querySelector(".tilt-card__inner");
+      const viewer = card.querySelector("dialog");
+      const amplitude = Number(face.dataset.tiltAmplitude) || 0;
+      const scale = Number(face.dataset.tiltScale) || 1;
+
+      // Start the spotlight at the centre, as ChromaGrid does, so the first
+      // hover eases in from the middle rather than sweeping from the corner.
+      inner.style.setProperty("--chroma-x", `${face.offsetWidth / 2}px`);
+      inner.style.setProperty("--chroma-y", `${face.offsetHeight / 2}px`);
+
+      function reset() {
+        inner.style.setProperty("--rx", "0deg");
+        inner.style.setProperty("--ry", "0deg");
+        inner.style.setProperty("--s", "1");
+      }
+
+      face.addEventListener("pointermove", (event) => {
+        if (!fine.matches) return;
+        const rect = face.getBoundingClientRect();
+        const px = event.clientX - rect.left;
+        const py = event.clientY - rect.top;
+
+        // Spotlight centre, in the inner layer's own (unscaled) coordinates:
+        // the layer grows about its centre, so undo that to keep the colour
+        // under the pointer rather than drifting toward the edges.
+        const s = reduced.matches ? 1 : scale;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        inner.style.setProperty("--chroma-x", `${(cx + (px - cx) / s).toFixed(1)}px`);
+        inner.style.setProperty("--chroma-y", `${(cy + (py - cy) / s).toFixed(1)}px`);
+
+        if (reduced.matches) return;
+        // -1 at one edge, 1 at the other, same as React Bits' offset / half-size.
+        const x = (px / rect.width) * 2 - 1;
+        const y = (py / rect.height) * 2 - 1;
+        inner.style.setProperty("--rx", `${(-y * amplitude).toFixed(2)}deg`);
+        inner.style.setProperty("--ry", `${(x * amplitude).toFixed(2)}deg`);
+        inner.style.setProperty("--s", String(scale));
+      });
+      face.addEventListener("pointerleave", reset);
+
+      face.addEventListener("click", () => {
+        reset();
+        viewer.showModal();
+      });
+      viewer.querySelector(".tilt-card__close").addEventListener("click", () => viewer.close());
+      // A click that lands on the dialog itself, not its image or button, is a
+      // click on the backdrop.
+      viewer.addEventListener("click", (event) => {
+        if (event.target === viewer) viewer.close();
+      });
+    });
+  })();
+</script>

@@ -18,6 +18,17 @@ const home = localizedPath(locale, "/");
 /* Home is an anchor too. Pointing it at bare "/" made it the one link that
    reloaded the page instead of scrolling — no smooth scroll, no snap. */
 const section = (id: string) => `${home}#${id}`;
+
+/* One list, rendered twice: inline from md up, and inside the phone menu below
+   that. Five labels plus the two toggles don't fit a 360–375px bar (English ran
+   59px over), so phones get a menu instead of a squeezed or scrolling row. */
+const links = [
+  { id: "top", label: t("nav.home") },
+  { id: "work", label: t("nav.work") },
+  { id: "experience", label: t("nav.experience") },
+  { id: "about", label: t("nav.about") },
+  { id: "contact", label: t("nav.contact") },
+];
 ---
 
 {/* Sticky, because the home page is one full screen per section: in flow this
@@ -28,26 +39,43 @@ const section = (id: string) => `${home}#${id}`;
 <header class="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)]">
   <div class="relative max-w-4xl mx-auto px-5 h-16 flex items-center justify-between md:justify-end gap-3">
     {/* Absolutely centred from md up so the links sit on the page's true centre
-        regardless of how wide the toggles are. Below that there isn't room for
-        a centred row plus the toggles, so it falls back to in-flow at the start
-        edge — `left` is deliberate and not `start`: centring is symmetric, so
-        the logical property would flip it off-centre in RTL. */}
+        regardless of how wide the toggles are — `left` is deliberate and not
+        `start`: centring is symmetric, so the logical property would flip it
+        off-centre in RTL. */}
     <nav
-      class="flex items-center gap-4 text-sm md:text-base font-medium text-[var(--text-muted)] md:absolute md:left-1/2 md:-translate-x-1/2 md:gap-7"
+      class="hidden md:flex items-center gap-7 text-base font-medium text-[var(--text-muted)] absolute left-1/2 -translate-x-1/2"
     >
-      <a href={section("top")} class="hover:text-[var(--text)] transition-colors">
-        {t("nav.home")}
-      </a>
-      <a href={section("work")} class="hover:text-[var(--text)] transition-colors">
-        {t("nav.work")}
-      </a>
-      <a href={section("about")} class="hover:text-[var(--text)] transition-colors">
-        {t("nav.about")}
-      </a>
-      <a href={section("contact")} class="hover:text-[var(--text)] transition-colors">
-        {t("nav.contact")}
-      </a>
+      {links.map((link) => (
+        <a href={section(link.id)} class="hover:text-[var(--text)] transition-colors">
+          {link.label}
+        </a>
+      ))}
     </nav>
+
+    {/* Phones: a native <details> disclosure — open/close, keyboard and screen
+        reader semantics come with the element. The script below only closes it
+        on a pick, an outside click, or Escape. The panel hangs off the
+        `relative` bar, full width, on the same opaque background. */}
+    <details class="site-menu md:hidden">
+      <summary
+        class="list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none inline-flex items-center gap-2 h-9 px-3 rounded-md border border-[var(--border)] text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+        {t("nav.menu")}
+      </summary>
+      <nav class="absolute inset-x-0 top-full border-b border-[var(--border)] bg-[var(--bg)] px-5 py-2 flex flex-col">
+        {links.map((link) => (
+          <a
+            href={section(link.id)}
+            class="py-3 text-base font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    </details>
     <div class="flex items-center gap-2">
       <LanguageToggle locale={locale} targetPath={altPath} />
       <ThemeToggle locale={locale} />
@@ -90,8 +118,14 @@ const section = (id: string) => `${home}#${id}`;
       waitForQuiet(400);
     }
 
+    const menu = document.querySelector("header .site-menu");
+
     document.querySelectorAll("header nav a[href*='#']").forEach((link) => {
       link.addEventListener("click", (event) => {
+        // A pick from the phone menu folds it away first, so the jump lands
+        // on an uncovered section and a cross-page link doesn't leave it open
+        // in the back/forward cache.
+        if (menu) menu.open = false;
         const url = new URL(link.href);
         if (url.pathname.replace(/\/$/, "") !== here) return;
         const target = document.getElementById(url.hash.slice(1));
@@ -121,6 +155,19 @@ const section = (id: string) => `${home}#${id}`;
       document.addEventListener("DOMContentLoaded", landOnHash, { once: true });
     } else {
       landOnHash();
+    }
+
+    // <details> opens and closes itself; what it doesn't do is close when the
+    // reader clicks elsewhere or presses Escape, which a menu is expected to.
+    if (menu) {
+      document.addEventListener("click", (event) => {
+        if (menu.open && !menu.contains(event.target)) menu.open = false;
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !menu.open) return;
+        menu.open = false;
+        menu.querySelector("summary").focus();
+      });
     }
   })();
 </script>
