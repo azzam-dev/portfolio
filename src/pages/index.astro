@@ -13,16 +13,19 @@ const projects = (await getCollection("projects", (entry) => entry.id.startsWith
   .sort((a, b) => a.data.order - b.data.order);
 const email = "azzamalfahad23@gmail.com";
 
-/* Taken from the skills section of the CV plus what the projects here actually
-   ship — not a wish list. Keep the two in step when either changes. */
+/* What the projects here actually ship, plus C++ (the language of the degree).
+   PyQt and OpenCV are in the CV but not here: they belong to the desktop
+   version of the graduation project, which this site does not show. */
 const tools = [
+  "TypeScript",
   "Python",
   "C++",
-  "TypeScript",
   "SQL",
-  "PyQt",
-  "OpenCV",
+  "React",
   "Next.js",
+  "React Native",
+  "Expo",
+  "Supabase",
   "PostgreSQL",
 ];
 
@@ -164,21 +167,17 @@ const panel =
         <h2 class="t-h2 mb-5 md:mb-7">
           {t("about.heading")}
         </h2>
-        {/* The second paragraph is sm-and-up only: with it, About does not fit a
-            375×701 phone screen (it ran ~200px over with the co-op sentence, and
-            is still ~20px over without it). Without it, the lead takes the larger
-            gap so the tools list keeps its air. The co-op term lives in
-            Experience now. */}
-        <p class="t-lead max-w-2xl mb-8 sm:mb-6">
-          Computer Science graduate from Majmaah University.
+        {/* Short enough to show in full on a 375×701 phone; the paragraph it
+            replaced had to be hidden below sm. About both projects, not one, and
+            with no mention of face login (owner's call, as in the project copy). */}
+        <p class="t-lead max-w-2xl mb-6">
+          Computer Science graduate from Majmaah University. I build web and mobile
+          apps.
         </p>
-        <p class="hidden sm:block t-body text-[var(--text-muted)] max-w-2xl mb-8">
-          What I keep returning to is the boundary a system defends: authentication,
-          access control, and the point where a design decides what it is allowed to
-          know. That started with a desktop file vault in Python and PyQt that paired
-          a password with facial recognition, and carried into the web rewrite that
-          replaced it, where every one of those rules had to be re-established in a
-          browser that trusts nothing.
+        <p class="t-body text-[var(--text-muted)] max-w-2xl mb-8">
+          I start from the problem: who will use it and what they need. Then I build
+          the interface, the server and the database behind it. That is how a file
+          storage web app and a reminder app for drivers came about.
         </p>
         <p class="eyebrow mb-4">{t("about.workWith")}</p>
         <ul class="flex flex-wrap gap-2">
