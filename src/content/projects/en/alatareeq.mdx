@@ -1,0 +1,78 @@
+---
+slug: "alatareeq"
+title: "Alatareeq (On the Way)"
+problemOneLiner: "Reminds you of what you need as you drive past a shop that has it."
+year: 2026
+status: "in-progress"
+order: 2
+
+surface:
+  what: "A reminder app for drivers. You type what you need in an everyday Arabic sentence, like \"bread, milk and Panadol\", and the app knows bread and milk come from a grocery and Panadol from a pharmacy. Then on any drive, it alerts you as you approach a grocery or pharmacy on your way, and one tap opens the route to it in Google Maps."
+  why: "Ordinary reminders go off at a set time, usually when you are at home or at work and nowhere near a shop, so you dismiss them and forget. Alatareeq reminds you at the moment you can actually stop: in the car, with the shop ahead. It doesn't need one particular shop either. Any pharmacy or grocery on your way will do, and it only alerts you when stopping takes just a few minutes out of your trip."
+  forWhom: "Anyone who runs errands by car and keeps forgetting the small things until they're home. The app is in testing for now and not yet available to download."
+
+deep:
+  layers:
+    - id: "app"
+      label: "Expo App"
+      note: "Reads the sentence on the phone, keeps reminders on the device, and watches location while the app is open. Runs on iPhone in Expo Go and as a web build in Safari."
+    - id: "core"
+      label: "Shared Core"
+      note: "Pure TypeScript with no browser or React Native imports: Arabic normalization, the sentence parser, deadlines, detour estimates and the alert gate. Tested in Node."
+    - id: "engine"
+      label: "Drive Engine"
+      note: "On every location fix: which reminders are open, which shops lie ahead, and whether stopping is worth an alert right now."
+    - id: "functions"
+      label: "Edge Functions"
+      note: "Three Supabase functions: places for the tiles ahead, brand-name correction, and shared reports of shops that closed for good."
+    - id: "db"
+      label: "Postgres"
+      note: "A 90-day cache of places per tile and kind of shop, the month's search budget per category, confirmed brands, and closure reports."
+    - id: "tomtom"
+      label: "TomTom Search"
+      note: "The source of places. Its free tier is 2,500 searches a month, shared by every user."
+  architectureNotes: "Most of the design follows from one number: 2,500 place searches a month on the free tier, shared by everyone. So places are fetched in tiles of about 1.5 km, only along the road ahead, and only for the kinds of shop someone has a reminder for. One search per tile covers all of its kinds at once, the result is cached on the server for 90 days and again on the phone, and each category gets a share of the month in proportion to how often it is asked for. The logic itself lives in a pure TypeScript core that imports nothing from a browser or from React Native, so the same functions run in the tests, in the app, and, copied, inside the Deno edge functions."
+  decisions:
+    - question: "Where should the places come from?"
+      optionA: "OpenStreetMap through the Overpass API."
+      optionB: "TomTom Search, behind an interface that can swap in another provider later."
+      chosen: "TomTom."
+      because: "Overpass refused or failed five of eight requests in testing, and OpenStreetMap's shop tags in Riyadh were often wrong. TomTom returned usable shops with brand names, and the PlacesSource interface keeps Google Places a one-module change if it proves better."
+    - question: "How should 2,500 searches a month be spent?"
+      optionA: "One search per kind of shop around the driver."
+      optionB: "One search per tile for every kind of shop at once, cached for 90 days."
+      chosen: "One search per tile."
+      because: "Per-kind searches multiply the cost by the number of reminders. A tile search split across its kinds cost two searches in Jeddah where per-kind would have cost six, and a second trip over the same road costs nothing."
+    - question: "How should the app understand a sentence?"
+      optionA: "Send it to a language model."
+      optionB: "A dictionary of about a thousand items and the shops that sell them, plus parsing rules."
+      chosen: "The dictionary."
+      because: "It is free, works offline, answers the same way every time, and every rule can be tested. Tests reject a dictionary word that is not normalized, is duplicated, or collides with a shop name, a verb or a quantity."
+    - question: "What should happen when a brand name is misspelled?"
+      optionA: "Correct it automatically from the search results."
+      optionB: "Suggest a correction and let the user confirm it."
+      chosen: "Suggest and confirm."
+      because: "Search alone gets it wrong: \"باندا\", a common way to write the Panda supermarket chain, came back as a stationery shop called \"ماندا\". A confirmed brand is saved for every user, so a wrong guess would spread."
+  challenges:
+    - whatBroke: "The web build gave no alerts on a real drive in Safari, and the server received no requests at all."
+      howDiagnosed: "The location library's web implementation (expo-location 57) reported each fix under the browser's watch id instead of its own, so it never found the subscriber and stopped watching after the first fix. Nothing errored; the app simply never moved."
+      fix: "On the web the engine now watches navigator.geolocation directly, while the phone build keeps the library. The screen says it is waiting for a location until the first fix arrives, and explains if Safari refuses. Verified with a simulated drive; not yet on a real one."
+    - whatBroke: "Sentences typed on an iPhone sometimes came back with no items, even for words in the dictionary."
+      howDiagnosed: "iOS can insert an invisible right-to-left mark before a word, so the typed word was no longer equal to the dictionary entry. The Node tests and the desktop browser never showed it, because typing there does not add the character."
+      fix: "Normalization strips invisible direction marks, and every word comparison goes through it rather than comparing the raw text."
+  whatIdImprove:
+    - "Alerts only work while the app is open: Expo Go and Safari get no location in the background. A native build would fix that, and it needs an Apple Developer account."
+    - "The edge functions have no per-client rate limit, so any visitor can spend the shared monthly budget. That has to come before the app is shared widely."
+    - "The step that marks items done after you visit a shop has no tests yet. It changes user data, so it belongs in the tested core."
+
+stack:
+  - "TypeScript"
+  - "React Native"
+  - "Expo"
+  - "Supabase"
+  - "TomTom API"
+
+links: {}
+---
+{/* The deep-dive page builds the Layer Reveal diagram and every section
+    directly from the frontmatter above — this body is intentionally empty. */}

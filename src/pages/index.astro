@@ -2,7 +2,6 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import DotLensBackground from "../components/DotLensBackground";
-import ProjectCard from "../components/ProjectCard.astro";
 import FeaturedProject from "../components/FeaturedProject.astro";
 import TiltedCard from "../components/TiltedCard.astro";
 import certificate from "../assets/sdaia-coop-certificate.png";
@@ -10,9 +9,9 @@ import { useTranslations } from "../i18n/utils";
 
 const locale = "en" as const;
 const t = useTranslations(locale);
-const projects = await getCollection("projects", (entry) => entry.id.startsWith("en/"));
+const projects = (await getCollection("projects", (entry) => entry.id.startsWith("en/")))
+  .sort((a, b) => a.data.order - b.data.order);
 const email = "azzamalfahad23@gmail.com";
-const [featured, ...rest] = projects;
 
 /* Taken from the skills section of the CV plus what the projects here actually
    ship — not a wish list. Keep the two in step when either changes. */
@@ -96,19 +95,25 @@ const panel =
       </div>
     </section>
 
-    <section id="work" class={panel}>
-      <div class="max-w-4xl mx-auto w-full">
-        <p class="eyebrow mb-3">01 / {t("nav.work")}</p>
-        <h2 class="t-h2 mb-5 md:mb-7">
-          {t("home.workHeading")}
-        </h2>
-        {featured && <FeaturedProject locale={locale} project={featured} />}
-        {rest.length > 0 && (
-          <div class="grid md:grid-cols-2 gap-4 mt-10">
-            {rest.map((project) => <ProjectCard locale={locale} project={project} />)}
+    {/* Work is one section of several screens: one per project, each laid out
+        the same way and snapping on its own (owner's call). The heading sits on
+        the first screen only; the header link and the language toggle still
+        land on the section's top. Each screen has to fit 375×701 like any
+        section. */}
+    <section id="work">
+      {projects.map((project, i) => (
+        <div class={panel}>
+          <div class="max-w-4xl mx-auto w-full">
+            <p class="eyebrow mb-3">01 / {t("nav.work")}</p>
+            {i === 0 && (
+              <h2 class="t-h2 mb-5 md:mb-7">
+                {t("home.workHeading")}
+              </h2>
+            )}
+            <FeaturedProject locale={locale} project={project} />
           </div>
-        )}
-      </div>
+        </div>
+      ))}
     </section>
 
     {/* The one section allowed to outgrow a phone screen (owner's call: all

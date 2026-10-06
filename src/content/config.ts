@@ -36,7 +36,12 @@ const projects = defineCollection({
     title: z.string(),
     problemOneLiner: z.string().max(90),
     year: z.number(),
-    status: z.enum(["shipped", "in-progress", "archived"]),
+    // For work that spanned years: shown as "yearStart–year".
+    yearStart: z.number().optional(),
+    status: z.enum(["done", "in-progress", "archived"]),
+    // Position on the home page, lowest first; the first is the featured one.
+    // Without it, file-name order decides, and "alatareeq" sorts first.
+    order: z.number(),
     cover: z.string().optional(),
 
     surface: z.object({
