@@ -364,6 +364,17 @@ export default function DotLens(props: Props) {
             if (rect.width <= 0 || rect.height <= 0) return
 
             const pointer = pointerRef.current
+
+            // A finger is not a pointer to follow. Touch sends a move or two at
+            // the contact point, then the browser claims the gesture for
+            // scrolling and sends pointercancel instead of more moves — so the
+            // lens jumped to the touch and stayed parked there, drift and all.
+            // On touch the field keeps to its idle path.
+            if (event.pointerType === "touch") {
+                pointer.onTarget = 0
+                return
+            }
+
             const inside =
                 event.clientX >= rect.left &&
                 event.clientX <= rect.right &&
