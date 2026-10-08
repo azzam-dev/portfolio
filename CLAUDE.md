@@ -22,15 +22,21 @@ npm run preview
 **مهم:** لا تكتفِ بـ `npx astro build` للتحقق محليًا — لا يشغّل `astro check`،
 فيفوّت أخطاء type قد تفشل على Vercel (صار هذا فعليًا، انظر PROGRESS.md).
 
+المعاينة داخل Claude: الإعداد `portfolio` في `E:\Projects\.claude\launch.json`
+(المجلد الأب، لا هذا المستودع) يشغّل خادم التطوير على 4321. بعد تعديل أي `.mdx`
+والخادم شغّال: أوقفه، احذف `.astro`، وأعد تشغيله — وإلا يعرض النص القديم.
+النشر: push إلى `master`. روابط معاينة الفروع على Vercel خلف تسجيل الدخول، فالتجربة
+على فرع محلي والخادم المحلي، ثم الدمج في `master` بإذن صاحب المشروع.
+
 ## المجلدات
 
 | المسار | المسؤولية |
 |---|---|
-| `src/pages/` + `src/pages/ar/` | الصفحات — مرآة 1:1 (en بدون بادئة، ar تحت `/ar`). **الموقع صفحة واحدة**: `index.astro` يحوي كل الأقسام (`#top`, `#work`, `#experience`, `#about`, `#contact`)، ولم يبقَ غيرها إلا صفحتا دراسة الحالة `/work/[slug]` و`/work/[slug]/deep`. محتوى "الخبرة" في ثابت `coop` أعلى كل صفحة رئيسية |
+| `src/pages/` + `src/pages/ar/` | الصفحات — مرآة 1:1 (en بدون بادئة، ar تحت `/ar`). **الموقع صفحة واحدة**: `index.astro` يحوي كل الأقسام (`#top`, `#work`, `#experience`, `#about`, `#contact`)، ولم يبقَ غيرها إلا صفحتا دراسة الحالة `/work/[slug]` و`/work/[slug]/deep` (لكل مشروع). محتوى "الخبرة" في ثابت `coop`، ونص "نبذة" ومصفوفة `tools`، كلها داخل كل صفحة رئيسية مباشرة لا في القاموس |
 | `src/assets/` | صور تمر بـ`astro:assets` (تُولَّد منها webp بعدة عروض): `sdaia-coop-certificate.png` — شهادة التدريب التعاوني، مرسومة من ملف PDF الأصلي |
-| `src/content/projects/{en,ar}/` | محتوى دراسات الحالة (MDX)، يُتحقق منه بـ Zod schema |
+| `src/content/projects/{en,ar}/` | محتوى دراسات الحالة (MDX)، يُتحقق منه بـ Zod schema. مشروعان: `secure-cloud-storage` (`order: 1`) و`alatareeq` (`order: 2`) |
 | `src/content/config.ts` | الـ schema + `generateId` مخصص (**حساس**، انظر أدناه) |
-| `src/components/` | Header, ThemeToggle, LanguageToggle, ProjectCard, FeaturedProject, TiltedCard (Astro) + LayerReveal, DotLens, DotLensBackground (React) |
+| `src/components/` | Header, ThemeToggle, LanguageToggle, FeaturedProject, TiltedCard (Astro) + LayerReveal, DotLens, DotLensBackground (React). `ProjectCard.astro` موجود بلا استعمال |
 | `src/layouts/Base.astro` | الهيكل المشترك: `<head>`, سكربت منع وميض الثيم, Header |
 | `src/i18n/` | `ui.ts` (قاموس الترجمة) + `utils.ts` (`useTranslations`, `localizedPath`, `dirFor`) |
 | `src/styles/global.css` | توكنز التصميم (فاتح/داكن) + مقياس الخط السائل `.t-*` + قوالب `.eyebrow` `.chip` `.btn-accent` `.btn-ghost` `.link-row` `.tilt-card*`، كلها في `@layer components` |
@@ -91,7 +97,7 @@ npm run preview
   مدى (`2025–2026`). وقيم `status`: `done` / `in-progress` / `archived`.
 - **لا تضف `links.live` لمشروع عالطريق قبل أن يطلب صاحب المشروع.** موقعه التجريبي
   عام، ودوال Supabase فيه بلا حد طلبات، وكل زائر يصرف من رصيد TomTom الشهري
-  المشترك. والمستودع خاص فلا `links.repo`.
+  المشترك. و`links.repo` كذلك بطلبه فقط: المستودع صار عامًا، لكن القرار كان يوم كان خاصًا.
 - **لا تجعل قسمًا أطول من الشاشة.** التخطيط شاشة واحدة لكل قسم مع
   `scroll-snap-type: y mandatory`؛ قسم يفيض يجعل الالتقاط يقاوم المستخدم. لهذا
   `panel` يستعمل `min-h-svh` لا `h-svh` (لا يقص المحتوى) وهناك
@@ -146,7 +152,7 @@ npm run preview
   (`E:\Projects\graduationproj-web\src`) لا README الخاص به (فيه معلومات قديمة).
   ونص سطح عالطريق معتمد حرفيًا كذلك (مصدره `E:\Projects\alatareeq`): يمشي مع
   القارئ خطوة خطوة حتى يفهم التطبيق بلا شرح.
-  وقِس المسودة على بطاقة "الأعمال" في 375×701 قبل عرضها (انظر قاعدة طول الأقسام).
+  وقِس المسودة على شاشة المشروع داخل "الأعمال" في 375×701 قبل عرضها (انظر قاعدة طول الأقسام).
 - **روابط التنقّل تبقى مطلقة (`/#work`) لا مجرّدة (`#work`).** الشريط نفسه يظهر
   على صفحات دراسة الحالة، والمجرّدة تبحث عن القسم داخل تلك الصفحة فلا تجده.
 - **لا تكتب `uppercase` أو `tracking-widest` على نص عربي.** الـletter-spacing
